@@ -13,7 +13,7 @@ export class Password {
 		return new Password(hash)
 	}
 
-	get value() {
+	getValue() {
 		return this.hashed
 	}
 

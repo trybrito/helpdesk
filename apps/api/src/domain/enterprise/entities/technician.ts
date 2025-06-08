@@ -2,11 +2,12 @@ import { Entity } from 'apps/api/src/core/entity'
 import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 
 export interface TechnicianProps {
-	createdBy: string
-	userId: string
+	lastUpdateLogId: UniqueEntityId
+	userId: UniqueEntityId
 	firstName: string
 	lastName: string
 	mustUpdatePassword: boolean
+	scheduleAvailability: string[]
 }
 
 export class Technician extends Entity<TechnicianProps> {
@@ -22,12 +23,20 @@ export class Technician extends Entity<TechnicianProps> {
 		return this.props.userId
 	}
 
-	get createdBy() {
-		return this.props.createdBy
+	get lastUpdateLogId() {
+		return this.props.lastUpdateLogId
 	}
 
 	get mustUpdatePassword() {
 		return this.props.mustUpdatePassword
+	}
+
+	get scheduleAvailability() {
+		return this.props.scheduleAvailability
+	}
+
+	set lastUpdateLogId(id: UniqueEntityId) {
+		this.props.lastUpdateLogId = id
 	}
 
 	set firstName(name: string) {
@@ -36,6 +45,10 @@ export class Technician extends Entity<TechnicianProps> {
 
 	set lastName(name: string) {
 		this.props.lastName = name
+	}
+
+	set scheduleAvailability(availability: string[]) {
+		this.props.scheduleAvailability = availability
 	}
 
 	static create(props: TechnicianProps, id?: UniqueEntityId) {

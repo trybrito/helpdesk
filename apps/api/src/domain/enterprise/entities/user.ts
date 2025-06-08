@@ -1,15 +1,11 @@
+import { Role } from 'apps/api/src/core/@types/enums'
 import { Entity } from 'apps/api/src/core/entity'
 import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
+import { Email } from './value-objects/email'
 import { Password } from './value-objects/password'
 
-enum Role {
-	Customer = 'customer',
-	Technician = 'technician',
-	Admin = 'admin',
-}
-
 export interface UserProps {
-	email: string
+	email: Email
 	password: Password
 	role: Role
 	profileImageUrl?: string | null
@@ -17,11 +13,11 @@ export interface UserProps {
 
 export class User extends Entity<UserProps> {
 	get email() {
-		return this.props.email
+		return this.props.email.getValue()
 	}
 
 	get password() {
-		return this.props.password.value
+		return this.props.password.getValue()
 	}
 
 	get role() {
@@ -30,10 +26,6 @@ export class User extends Entity<UserProps> {
 
 	get profileImageUrl() {
 		return this.props.profileImageUrl ?? ''
-	}
-
-	set email(email: string) {
-		this.props.email = email
 	}
 
 	set profileImageUrl(imageUrl: string) {
@@ -48,5 +40,9 @@ export class User extends Entity<UserProps> {
 
 	public async updatePassword(plainText: string) {
 		this.props.password = await Password.createFromPlainText(plainText)
+	}
+
+	public async changeEmail(email: string) {
+		this.props.email = await Email.create(email)
 	}
 }

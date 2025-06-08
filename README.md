@@ -14,14 +14,16 @@
 
 ### Entidades
 
-#### - User -> representação genérica de um usuário (centraliza dados iguais entre cada ator da aplicação, o que permite extensividade e reduz a repetição de código)
-#### - Customer -> representação do cliente e seus dados pertinentes a nível de domínio (nome e id do usuário - entidade)
-#### - Technician -> representação do técnico e seus dados pertinentes a nível de domínio (nome, id do usuário - entidade, id do admin - responsável pela criação da conta do técnico, deve atualizar a senha - campo booleano para sinalização de um técnico que está acessando a aplicação pela primeira vez (ou após reset de senha))
-#### - Admin -> representação do administrador e seus dados pertinentes a nível de domínio (nome e id do usuário - entidade)
-#### - Service -> representação do serviço que será prestado e seus dados
-#### - Category -> representação da categoria de um serviços e seus dados
-#### - Ticket -> representação do chamado e seus dados
-#### - Interaction -> representação da categoria de um serviços e seus dados
-#### - Observation -> representação de uma observação adicionado a um chamado criado e seus dados
-#### - BillingItem -> representação de cada item adicionado à fatura e seus dados
-#### - Billing -> representação da fatura atrelada à um chamado
+#### - User -> representação genérica de um usuário e dados comumente partilhados
+#### - Customer -> representação de um cliente
+#### - Technician -> representação de um técnico
+#### - Admin -> representação de um administrador
+#### - ProfileUpdateLog -> representação de um log de atualização de um perfil
+#### - Category -> representação de uma categoria de serviço
+#### - Service -> representação de um serviço que será prestado
+#### - Interaction -> representação de uma categoria de um serviço
+#### - Observation -> representação de uma observação adicionada a um chamado
+#### - ObservationActionLog -> representação de um log de ação em uma observação
+#### - Ticket -> representação de um chamado e seus dados
+#### - Billing -> representação de uma fatura atrelada à um chamado
+#### - BillingItem -> representação de cada item adicionado à fatura
