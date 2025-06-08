@@ -1,0 +1,20 @@
+{
+	"name": "helpdesk",
+	"private": true,
+	"workspaces": ["apps/*", "packages/*"],
+	"scripts": {
+		"check": "biome check --fix",
+		"format": "biome format --fix",
+		"lint": "biome lint --fix",
+		"dev": "turbo dev"
+	},
+	"author": "Thiago Brito <https://github.com/trybrito>",
+	"packageManager": "pnpm@10.7.0",
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"typescript": "5.8.3"
+	},
+	"dependencies": {
+		"turbo": "^2.5.4"
+	}
+}

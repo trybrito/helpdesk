@@ -1,0 +1,20 @@
+{
+	"name": "api",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "Thiago Raniery Brito <https://github.com/trybrito>",
+	"license": "MIT",
+	"packageManager": "pnpm@10.7.0",
+	"devDependencies": {
+		"@types/bcrypt": "5.0.2",
+		"@types/node": "22.15.30"
+	},
+	"dependencies": {
+		"bcrypt": "6.0.0"
+	}
+}

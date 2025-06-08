@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  database:
+    container_name: pg-helpdesk
+    image: bitnami/postgresql:17.5.0-debian-12-r10
+    ports:
+      - 5432:5432
+    env_file:
+      - ./.env.database.local
