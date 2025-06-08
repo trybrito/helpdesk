@@ -12,7 +12,7 @@
 
 ### Entidades (atores em cada subdomínio) e Casos de Uso
 
-#### Entidades
+### Entidades
 
 #### - User -> representação genérica de um usuário (centraliza dados iguais entre cada ator da aplicação, o que permite extensividade e reduz a repetição de código)
 #### - Customer -> representação do cliente e seus dados pertinentes a nível de domínio (nome e id do usuário - entidade)
