@@ -1,16 +1,17 @@
 import { Entity } from 'apps/api/src/core/entity'
 import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
+import { User } from './user'
 
 export interface AdminProps {
-	userId: UniqueEntityId
-	lastUpdateLogId: UniqueEntityId
+	user: User
+	lastUpdateLogId?: UniqueEntityId | null
 	firstName: string
 	lastName: string
 }
 
 export class Admin extends Entity<AdminProps> {
-	get userId() {
-		return this.props.userId
+	get user() {
+		return this.props.user
 	}
 
 	get lastUpdateLogId() {
@@ -31,10 +32,6 @@ export class Admin extends Entity<AdminProps> {
 
 	set lastName(name: string) {
 		this.props.lastName = name
-	}
-
-	set lastUpdateLogId(id: UniqueEntityId) {
-		this.props.lastUpdateLogId = id
 	}
 
 	static create(props: AdminProps, id?: UniqueEntityId) {

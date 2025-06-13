@@ -15,10 +15,14 @@ export enum TicketAssignmentStatus {
 	Pendent = 'pendent',
 }
 
-export enum ObservationLogsActions {
+export enum ObservationActionsLogs {
 	Create = 'create',
 	Update = 'update',
-	Delete = 'delete',
+}
+
+export enum ProfileActionsLogs {
+	Create = 'create',
+	Update = 'update',
 }
 
 export enum BillingStatus {
