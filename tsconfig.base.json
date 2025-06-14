@@ -5,15 +5,31 @@
 
   "compilerOptions": {
     "lib": ["ES2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator"],
-    "module": "nodenext",
-    "target": "es2022",
 
+    "removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+
+    "target": "es2023",
+    "sourceMap": true,
+    "incremental": true,
     "strict": true,
+    "strictNullChecks": true,
+
+    "noImplicitAny": false,
     "esModuleInterop": true,
+    "module": "commonjs",
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+
     "resolveJsonModule": false,
-    "moduleResolution": "node16",
-    "baseUrl": "."
+    "strictBindCallApply": false,
+		"noFallthroughCasesInSwitch": false,
+
+    "baseUrl": "./",
+    "paths": {
+      "@api/*": ["./apps/api/src/*"],
+    }
   }
 }

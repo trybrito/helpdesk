@@ -3,8 +3,8 @@ import { compare, hash } from 'bcrypt'
 export class Password {
 	private constructor(private readonly hashed: string) {}
 
-	static async createFromPlainText(plainText: string) {
-		const hashed = await hash(plainText, 8)
+	static async createFromPlainText(plainText: string, rounds = 8) {
+		const hashed = await hash(plainText, rounds)
 
 		return new Password(hashed)
 	}

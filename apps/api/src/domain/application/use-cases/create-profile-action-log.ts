@@ -1,6 +1,7 @@
 import { ProfileActionsLogs, Role } from 'apps/api/src/core/@types/enums'
 import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 import { ProfileActionLog } from '../../enterprise/entities/profile-action-log'
+import { ProfileActionLogsRepository } from '../repositories/logs/profile-action-logs-repository'
 
 export interface CreateProfileLogUseCaseRequest {
 	actorEntityId: string
@@ -14,6 +15,10 @@ export interface CreateProfileLogUseCaseResponse {
 }
 
 export class CreateProfileLogUseCase {
+	constructor(
+		private profileActionLogsRepository: ProfileActionLogsRepository,
+	) {}
+
 	async execute({
 		actorEntityId,
 		actorEntityRole,
@@ -29,6 +34,8 @@ export class CreateProfileLogUseCase {
 			targetEntityRole: targetEntityRole,
 			action: ACTION,
 		})
+
+		await this.profileActionLogsRepository.create(profileActionLog)
 
 		return { id: profileActionLog.id.toString() }
 	}
