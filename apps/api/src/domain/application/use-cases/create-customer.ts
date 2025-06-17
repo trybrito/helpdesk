@@ -1,4 +1,5 @@
 import { Role } from '@api/core/@types/enums'
+import { Either, right } from '@api/core/either'
 import { Customer } from '@api/domain/enterprise/entities/customer'
 import { User } from '@api/domain/enterprise/entities/user'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
@@ -12,9 +13,12 @@ export interface CreateCustomerUseCaseRequest {
 	password: string
 }
 
-export interface CreateCustomerUseCaseResponse {
-	customer: Customer
-}
+export type CreateCustomerUseCaseResponse = Either<
+	never,
+	{
+		customer: Customer
+	}
+>
 
 export class CreateCustomerUseCase {
 	constructor(private customersRepository: CustomersRepository) {}
@@ -39,6 +43,6 @@ export class CreateCustomerUseCase {
 
 		await this.customersRepository.create(customer)
 
-		return { customer }
+		return right({ customer })
 	}
 }

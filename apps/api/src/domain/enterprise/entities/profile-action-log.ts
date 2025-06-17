@@ -1,7 +1,7 @@
+import { Entity } from '@api/core/entities/entity'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { ProfileActionTypes, Role } from 'apps/api/src/core/@types/enums'
 import { Optional } from 'apps/api/src/core/@types/optional'
-import { Entity } from 'apps/api/src/core/entity'
-import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 
 export interface ProfileActionLogProps {
 	actorEntityId: UniqueEntityId

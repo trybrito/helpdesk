@@ -1,5 +1,5 @@
-import { Entity } from 'apps/api/src/core/entity'
-import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
+import { Entity } from '@api/core/entities/entity'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { User } from './user'
 
 export type CustomerProps = {

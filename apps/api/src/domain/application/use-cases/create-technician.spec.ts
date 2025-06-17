@@ -20,7 +20,8 @@ describe('Create Technician', () => {
 			scheduleAvailability: [''],
 		})
 
-		expect(inMemoryTechniciansRepository.items[0]).toBe(result.technician)
+		expect(result.isRight()).toBeTruthy()
+		expect(inMemoryTechniciansRepository.items[0]).toBe(result.value.technician)
 		expect(inMemoryTechniciansRepository.items[0].user.role).toEqual(
 			'technician',
 		)

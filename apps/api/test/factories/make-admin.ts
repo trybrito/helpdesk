@@ -1,5 +1,5 @@
 import { Role } from '@api/core/@types/enums'
-import { UniqueEntityId } from '@api/core/unique-entity-id'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Admin, AdminProps } from '@api/domain/enterprise/entities/admin'
 import { faker } from '@faker-js/faker'
 import { makeUser } from './make-use'

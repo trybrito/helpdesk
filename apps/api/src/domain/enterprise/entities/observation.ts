@@ -1,6 +1,6 @@
+import { Entity } from '@api/core/entities/entity'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Optional } from 'apps/api/src/core/@types/optional'
-import { Entity } from 'apps/api/src/core/entity'
-import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 
 export interface ObservationProps {
 	ticketId: UniqueEntityId

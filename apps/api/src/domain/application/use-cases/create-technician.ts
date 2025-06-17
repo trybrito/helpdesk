@@ -1,3 +1,4 @@
+import { Either, right } from '@api/core/either'
 import { Role } from 'apps/api/src/core/@types/enums'
 import { Technician } from '../../enterprise/entities/technician'
 import { User } from '../../enterprise/entities/user'
@@ -13,9 +14,12 @@ export interface CreateTechnicianUseCaseRequest {
 	scheduleAvailability: string[]
 }
 
-export interface CreateTechnicianUseCaseResponse {
-	technician: Technician
-}
+export type CreateTechnicianUseCaseResponse = Either<
+	never,
+	{
+		technician: Technician
+	}
+>
 
 export class CreateTechnicianUseCase {
 	constructor(private technicians: TechniciansRepository) {}
@@ -45,6 +49,6 @@ export class CreateTechnicianUseCase {
 
 		await this.technicians.create(technician)
 
-		return { technician }
+		return right({ technician })
 	}
 }

@@ -1,5 +1,5 @@
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { ProfileActionTypes, Role } from 'apps/api/src/core/@types/enums'
-import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 import { ProfileActionLog } from '../../enterprise/entities/profile-action-log'
 import { ProfileActionLogsRepository } from '../repositories/logs/profile-action-logs-repository'
 

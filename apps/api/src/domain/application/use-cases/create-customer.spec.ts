@@ -12,14 +12,14 @@ describe('Create customer', () => {
 	})
 
 	it('should be able to create a customer', async () => {
-		const { customer } = await sut.execute({
+		const result = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			email: 'example@example.com',
 			password: '123456',
 		})
 
-		expect(inMemoryCustomersRepository.items[0]).toEqual(customer)
+		expect(inMemoryCustomersRepository.items[0]).toEqual(result.value.customer)
 		expect(inMemoryCustomersRepository.items[0].user.role).toEqual('customer')
 	})
 

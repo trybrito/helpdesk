@@ -1,6 +1,6 @@
+import { Entity } from '@api/core/entities/entity'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Role } from 'apps/api/src/core/@types/enums'
-import { Entity } from 'apps/api/src/core/entity'
-import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 import { Email } from './value-objects/email'
 import { Password } from './value-objects/password'
 

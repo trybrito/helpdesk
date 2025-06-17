@@ -1,5 +1,5 @@
 import { Role } from '@api/core/@types/enums'
-import { UniqueEntityId } from '@api/core/unique-entity-id'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { User, UserProps } from '@api/domain/enterprise/entities/user'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
