@@ -12,24 +12,27 @@ describe('Create Technician', () => {
 	})
 
 	it('should be able to create a technician', async () => {
-		const password = '123456'
-
 		const result = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			email: 'johndoe@mail.com',
-			password,
+			password: '123456',
 			scheduleAvailability: [''],
 		})
 
-		const hashed = await Password.createFromPlainText(password)
-
 		expect(inMemoryTechniciansRepository.items[0]).toBe(result.technician)
-		expect(inMemoryTechniciansRepository.items[0].user).toEqual(
-			expect.objectContaining({
-				role: 'technician',
-			}),
+		expect(inMemoryTechniciansRepository.items[0].user.role).toEqual(
+			'technician',
 		)
-		expect(await hashed.compare(password)).toBeTruthy()
+	})
+
+	it('should be able to hash and compare passwords', async () => {
+		const password = await Password.createFromPlainText('123456')
+
+		const isValidHash = await password.compare('123456')
+		const isInvalidHash = await password.compare('wrong-password')
+
+		expect(isValidHash).toBeTruthy()
+		expect(!isInvalidHash).toBeTruthy()
 	})
 })
