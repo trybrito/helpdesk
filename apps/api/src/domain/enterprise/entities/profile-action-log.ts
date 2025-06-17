@@ -1,4 +1,4 @@
-import { ProfileActionsLogs, Role } from 'apps/api/src/core/@types/enums'
+import { ProfileActionTypes, Role } from 'apps/api/src/core/@types/enums'
 import { Optional } from 'apps/api/src/core/@types/optional'
 import { Entity } from 'apps/api/src/core/entity'
 import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
@@ -8,7 +8,7 @@ export interface ProfileActionLogProps {
 	actorEntityRole: Role
 	targetEntityId: UniqueEntityId
 	targetEntityRole: Role
-	action: ProfileActionsLogs
+	action: ProfileActionTypes
 	createdAt: Date
 }
 

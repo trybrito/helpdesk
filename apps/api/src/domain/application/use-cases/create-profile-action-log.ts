@@ -1,20 +1,21 @@
-import { ProfileActionsLogs, Role } from 'apps/api/src/core/@types/enums'
+import { ProfileActionTypes, Role } from 'apps/api/src/core/@types/enums'
 import { UniqueEntityId } from 'apps/api/src/core/unique-entity-id'
 import { ProfileActionLog } from '../../enterprise/entities/profile-action-log'
 import { ProfileActionLogsRepository } from '../repositories/logs/profile-action-logs-repository'
 
-export interface CreateProfileLogUseCaseRequest {
+export interface CreateProfileActionLogUseCaseRequest {
 	actorEntityId: string
 	actorEntityRole: Role
 	targetEntityId: string
 	targetEntityRole: Role
+	action: ProfileActionTypes
 }
 
-export interface CreateProfileLogUseCaseResponse {
-	id: string
+export interface CreateProfileActionLogUseCaseResponse {
+	actionLog: ProfileActionLog
 }
 
-export class CreateProfileLogUseCase {
+export class CreateProfileActionLogUseCase {
 	constructor(
 		private profileActionLogsRepository: ProfileActionLogsRepository,
 	) {}
@@ -24,19 +25,18 @@ export class CreateProfileLogUseCase {
 		actorEntityRole,
 		targetEntityId,
 		targetEntityRole,
-	}: CreateProfileLogUseCaseRequest): Promise<CreateProfileLogUseCaseResponse> {
-		const ACTION = ProfileActionsLogs.Create
-
+		action,
+	}: CreateProfileActionLogUseCaseRequest): Promise<CreateProfileActionLogUseCaseResponse> {
 		const profileActionLog = ProfileActionLog.create({
 			actorEntityId: new UniqueEntityId(actorEntityId),
 			actorEntityRole: actorEntityRole,
 			targetEntityId: new UniqueEntityId(targetEntityId),
 			targetEntityRole: targetEntityRole,
-			action: ACTION,
+			action: action,
 		})
 
 		await this.profileActionLogsRepository.create(profileActionLog)
 
-		return { id: profileActionLog.id.toString() }
+		return { actionLog: profileActionLog }
 	}
 }

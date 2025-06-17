@@ -20,7 +20,7 @@ export enum ObservationActionsLogs {
 	Update = 'update',
 }
 
-export enum ProfileActionsLogs {
+export enum ProfileActionTypes {
 	Create = 'create',
 	Update = 'update',
 }
