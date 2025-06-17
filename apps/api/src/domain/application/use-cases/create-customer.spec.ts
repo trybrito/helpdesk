@@ -1,3 +1,4 @@
+import { Password } from '@api/domain/enterprise/entities/value-objects/password'
 import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { CreateCustomerUseCase } from './create-customer'
 
@@ -20,5 +21,15 @@ describe('Create customer', () => {
 
 		expect(inMemoryCustomersRepository.items[0]).toEqual(customer)
 		expect(inMemoryCustomersRepository.items[0].user.role).toEqual('customer')
+	})
+
+	it('should be able to hash and compare passwords', async () => {
+		const password = await Password.createFromPlainText('123456')
+
+		const isValidHash = await password.compare('123456')
+		const isInvalidHash = await password.compare('wrong-password')
+
+		expect(isValidHash).toBeTruthy()
+		expect(!isInvalidHash).toBeTruthy()
 	})
 })
