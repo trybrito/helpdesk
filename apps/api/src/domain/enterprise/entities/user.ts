@@ -42,6 +42,10 @@ export class User extends Entity<UserProps> {
 		this.props.password = await Password.createFromPlainText(plainText)
 	}
 
+	public async comparePassword(password: string) {
+		return await this.props.password.compare(password)
+	}
+
 	public async changeEmail(email: string) {
 		this.props.email = await Email.create(email)
 	}

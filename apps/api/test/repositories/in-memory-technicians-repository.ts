@@ -13,4 +13,11 @@ export class InMemoryTechniciansRepository implements TechniciansRepository {
 
 		this.items.splice(index, 1, technician)
 	}
+
+	async findByEmail(email: string): Promise<Technician | null> {
+		const technician =
+			this.items.find((item) => item.user.email === email) ?? null
+
+		return technician
+	}
 }
