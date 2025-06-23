@@ -1,5 +1,6 @@
 import { Role } from '@api/core/@types/enums'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { User, UserProps } from '@api/domain/enterprise/entities/user'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
@@ -11,7 +12,7 @@ export async function makeUser(
 ) {
 	const user = new User(
 		{
-			email: Email.create(faker.internet.email()),
+			email: unwrapOrThrow(Email.create(faker.internet.email())),
 			password: await Password.createFromPlainText(faker.internet.password()),
 			role: Role.Customer,
 			...override,

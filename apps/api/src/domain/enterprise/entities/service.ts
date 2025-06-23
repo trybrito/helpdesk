@@ -41,8 +41,8 @@ export class Service extends Entity<ServiceProps> {
 		this.touch()
 	}
 
-	public changePrice(price: number) {
-		this.props.price = Money.create(price)
+	public changePrice(price: Money) {
+		this.props.price = price
 		this.touch()
 	}
 

@@ -1,4 +1,5 @@
-import { Either, right } from '@api/core/either'
+import { Either, left, right } from '@api/core/either'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Role } from 'apps/api/src/core/@types/enums'
 import { Technician } from '../../enterprise/entities/technician'
 import { User } from '../../enterprise/entities/user'
@@ -15,7 +16,7 @@ export interface CreateTechnicianUseCaseRequest {
 }
 
 export type CreateTechnicianUseCaseResponse = Either<
-	never,
+	InvalidInputDataError,
 	{
 		technician: Technician
 	}
@@ -33,8 +34,16 @@ export class CreateTechnicianUseCase {
 	}: CreateTechnicianUseCaseRequest): Promise<CreateTechnicianUseCaseResponse> {
 		const MUST_UPDATE_PASSWORD = true
 
+		const emailOrError = Email.create(email)
+
+		if (emailOrError.isLeft()) {
+			return left(new InvalidInputDataError([email]))
+		}
+
+		const validatedEmail = emailOrError.value
+
 		const user = new User({
-			email: Email.create(email),
+			email: validatedEmail,
 			password: await Password.createFromPlainText(password),
 			role: Role.Technician,
 		})

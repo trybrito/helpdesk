@@ -64,8 +64,8 @@ export class Billing extends Entity<BillingProps> {
 	}
 
 	recalculateTotal(items: BillingItem[]) {
-		const newTotal = items.reduce((acc, curr) => acc + curr.price.getValue(), 0)
+		const prices = items.map((item) => Number(item.price))
 
-		this.props.totalPrice = Money.create(newTotal)
+		this.props.totalPrice = Money.calculateTotal(prices)
 	}
 }

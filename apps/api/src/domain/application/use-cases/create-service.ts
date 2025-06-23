@@ -1,5 +1,6 @@
 import { Either, left, right } from '@api/core/either'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Service } from '@api/domain/enterprise/entities/service'
 import { Money } from '@api/domain/enterprise/entities/value-objects/money'
 import { AdminsRepository } from '../repositories/admins-repository'
@@ -48,11 +49,19 @@ export class CreateServiceUseCase {
 			return left(new ResourceNotFoundError())
 		}
 
+		const priceOrError = Money.create(price, true)
+
+		if (priceOrError.isLeft()) {
+			return left(new InvalidInputDataError([price]))
+		}
+
+		const validatedPrice = priceOrError.value
+
 		const service = Service.create({
 			createdBy: new UniqueEntityId(createdBy),
 			categoryId: new UniqueEntityId(categoryId),
 			name,
-			price: Money.create(price, true),
+			price: validatedPrice,
 		})
 
 		await this.servicesRepository.create(service)

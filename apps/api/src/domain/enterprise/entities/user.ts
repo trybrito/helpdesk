@@ -46,7 +46,7 @@ export class User extends Entity<UserProps> {
 		return await this.props.password.compare(password)
 	}
 
-	public async changeEmail(email: string) {
-		this.props.email = await Email.create(email)
+	public async changeEmail(email: Email) {
+		this.props.email = email
 	}
 }

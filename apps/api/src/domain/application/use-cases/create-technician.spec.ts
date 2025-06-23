@@ -1,3 +1,4 @@
+import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
 import { CreateTechnicianUseCase } from './create-technician'
@@ -12,7 +13,7 @@ describe('Create Technician', () => {
 	})
 
 	it('should be able to create a technician', async () => {
-		const result = await sut.execute({
+		const resultOrError = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			email: 'johndoe@mail.com',
@@ -20,8 +21,10 @@ describe('Create Technician', () => {
 			scheduleAvailability: [''],
 		})
 
-		expect(result.isRight()).toBeTruthy()
-		expect(inMemoryTechniciansRepository.items[0]).toBe(result.value.technician)
+		const result = unwrapOrThrow(resultOrError)
+
+		expect(resultOrError.isRight()).toBeTruthy()
+		expect(inMemoryTechniciansRepository.items[0]).toBe(result.technician)
 		expect(inMemoryTechniciansRepository.items[0].user.role).toEqual(
 			'technician',
 		)

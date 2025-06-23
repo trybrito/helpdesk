@@ -1,5 +1,6 @@
 import { Role } from '@api/core/@types/enums'
-import { Either, right } from '@api/core/either'
+import { Either, left, right } from '@api/core/either'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Customer } from '@api/domain/enterprise/entities/customer'
 import { User } from '@api/domain/enterprise/entities/user'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
@@ -14,7 +15,7 @@ export interface CreateCustomerUseCaseRequest {
 }
 
 export type CreateCustomerUseCaseResponse = Either<
-	never,
+	InvalidInputDataError,
 	{
 		customer: Customer
 	}
@@ -29,8 +30,16 @@ export class CreateCustomerUseCase {
 		email,
 		password,
 	}: CreateCustomerUseCaseRequest): Promise<CreateCustomerUseCaseResponse> {
+		const emailOrError = Email.create(email)
+
+		if (emailOrError.isLeft()) {
+			return left(new InvalidInputDataError([email]))
+		}
+
+		const validatedEmail = emailOrError.value
+
 		const user = new User({
-			email: Email.create(email),
+			email: validatedEmail,
 			password: await Password.createFromPlainText(password),
 			role: Role.Customer,
 		})

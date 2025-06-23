@@ -1,3 +1,4 @@
+import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
 import { FakeEncrypter } from 'apps/api/test/crypto/fake-encrypter'
@@ -34,7 +35,7 @@ describe('Authenticate', () => {
 
 		const customer = await makeCustomer({
 			user: {
-				email: Email.create(email),
+				email: unwrapOrThrow(Email.create(email)),
 				password: await Password.createFromPlainText(password),
 			},
 		})
@@ -58,7 +59,7 @@ describe('Authenticate', () => {
 
 		const technician = await makeTechnician({
 			user: {
-				email: Email.create(email),
+				email: unwrapOrThrow(Email.create(email)),
 				password: await Password.createFromPlainText(password),
 			},
 		})
