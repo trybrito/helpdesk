@@ -5,7 +5,7 @@ import { Money } from './value-objects/money'
 export interface ServiceProps {
 	createdBy: UniqueEntityId
 	categoryId: UniqueEntityId // verify
-	service: string
+	name: string
 	price: Money
 	updatedAt?: Date | null
 	deletedAt?: Date | null
@@ -20,8 +20,8 @@ export class Service extends Entity<ServiceProps> {
 		return this.props.categoryId
 	}
 
-	get service() {
-		return this.props.service
+	get name() {
+		return this.props.name
 	}
 
 	get price() {
@@ -36,8 +36,8 @@ export class Service extends Entity<ServiceProps> {
 		return this.props.deletedAt ?? null
 	}
 
-	set service(service: string) {
-		this.props.service = service
+	set name(name: string) {
+		this.props.name = name
 		this.touch()
 	}
 
@@ -56,8 +56,8 @@ export class Service extends Entity<ServiceProps> {
 	}
 
 	static create(props: ServiceProps, id?: UniqueEntityId) {
-		const service = new Service(props, id)
+		const name = new Service(props, id)
 
-		return service
+		return name
 	}
 }

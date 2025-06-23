@@ -3,7 +3,7 @@ import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 
 export interface CategoryProps {
 	createdBy: UniqueEntityId
-	category: string
+	name: string
 }
 
 export class Category extends Entity<CategoryProps> {
@@ -11,17 +11,17 @@ export class Category extends Entity<CategoryProps> {
 		return this.props.createdBy
 	}
 
-	get category() {
-		return this.props.category
+	get name() {
+		return this.props.name
 	}
 
-	set category(category: string) {
-		this.props.category = category
+	set name(name: string) {
+		this.props.name = name
 	}
 
 	static create(props: CategoryProps, id?: UniqueEntityId) {
-		const category = new Category(props, id)
+		const name = new Category(props, id)
 
-		return category
+		return name
 	}
 }
