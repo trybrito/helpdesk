@@ -28,7 +28,7 @@ describe('Authenticate', () => {
 		sut = new AuthenticateUseCase(inMemoryUsersRepository, encrypter)
 	})
 
-	it('should authenticate a customer', async () => {
+	it('should be able to authenticate a customer', async () => {
 		const email = 'example@example.com'
 		const password = '123456'
 
@@ -52,7 +52,7 @@ describe('Authenticate', () => {
 		})
 	})
 
-	it('should authenticate a technician', async () => {
+	it('should be able to authenticate a technician', async () => {
 		const email = 'example@example.com'
 		const password = '123456'
 

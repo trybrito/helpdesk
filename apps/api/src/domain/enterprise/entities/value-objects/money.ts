@@ -1,7 +1,13 @@
 export class Money {
 	private constructor(private readonly value: number) {}
 
-	static create(price: number) {
+	static create(value: string, inCents?: boolean) {
+		const price = Number(value.replace(',', '.'))
+
+		if (inCents) {
+			return new Money(price * 100)
+		}
+
 		return new Money(price)
 	}
 
