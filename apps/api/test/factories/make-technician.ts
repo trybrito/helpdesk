@@ -9,14 +9,14 @@ import { faker } from '@faker-js/faker'
 import { makeUser } from './make-user'
 
 export async function makeTechnician(
-	override?: {
+	overrides?: {
 		user?: Partial<UserProps>
 		technician?: Partial<TechnicianProps>
 	},
 	id?: UniqueEntityId,
 ) {
 	const user = await makeUser({
-		...override?.user,
+		...overrides?.user,
 		role: Role.Technician,
 	})
 
@@ -27,7 +27,7 @@ export async function makeTechnician(
 			lastName: faker.person.lastName(),
 			mustUpdatePassword: true,
 			scheduleAvailability: [''],
-			...override?.technician,
+			...overrides?.technician,
 		},
 		id,
 	)

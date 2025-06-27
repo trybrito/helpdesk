@@ -1,25 +1,27 @@
-import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { makeAdmin } from 'apps/api/test/factories/make-admin'
+import { adminAuthSetup } from 'apps/api/test/factories/helpers/admin-auth-setup'
 import { makeCategory } from 'apps/api/test/factories/make-category'
+import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
 import { CreateServiceUseCase } from './create-service'
 
+let admin: Admin
 let inMemoryAdminsRepository: InMemoryAdminsRepository
+
 let inMemoryCategoriesRepository: InMemoryCategoriesRepository
 let inMemoryServicesRepository: InMemoryServicesRepository
 let sut: CreateServiceUseCase
 
-let admin: Admin
-
 describe('Create service', () => {
 	beforeEach(async () => {
-		admin = await makeAdmin({}, new UniqueEntityId('admin-1'))
+		const authContext = await adminAuthSetup('admin-1')
 
-		inMemoryAdminsRepository = new InMemoryAdminsRepository([admin])
+		admin = authContext.admin
+		inMemoryAdminsRepository = authContext.adminsRepository
+
 		inMemoryCategoriesRepository = new InMemoryCategoriesRepository()
 		inMemoryServicesRepository = new InMemoryServicesRepository()
 
@@ -30,8 +32,8 @@ describe('Create service', () => {
 		)
 	})
 
-	it('should be able to create a service', async () => {
-		const category = await makeCategory({ category: { createdBy: admin.id } })
+	it('should allow an admin to create a service', async () => {
+		const category = await makeCategory({ createdBy: admin.id })
 
 		await inMemoryCategoriesRepository.create(category)
 
@@ -51,16 +53,34 @@ describe('Create service', () => {
 		)
 	})
 
-	it('should not be able to create a service if other user roles try to create a service', async () => {
+	it('should not allow a technician to create a service', async () => {
 		const technician = await makeTechnician()
 
-		const category = await makeCategory({ category: { createdBy: admin.id } })
+		const category = await makeCategory({ createdBy: admin.id })
 
 		await inMemoryCategoriesRepository.create(category)
 
 		const result = await sut.execute({
 			categoryId: category.id.toString(),
 			createdBy: technician.id.toString(),
+			name: 'Test',
+			price: '39,90',
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(inMemoryServicesRepository.items).toHaveLength(0)
+	})
+
+	it('should not allow a customer to create a service', async () => {
+		const customer = await makeCustomer()
+
+		const category = await makeCategory({ createdBy: admin.id })
+
+		await inMemoryCategoriesRepository.create(category)
+
+		const result = await sut.execute({
+			categoryId: category.id.toString(),
+			createdBy: customer.id.toString(),
 			name: 'Test',
 			price: '39,90',
 		})

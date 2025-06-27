@@ -7,7 +7,7 @@ import { Password } from '@api/domain/enterprise/entities/value-objects/password
 import { faker } from '@faker-js/faker'
 
 export async function makeUser(
-	override: Partial<UserProps> = {},
+	overrides: Partial<UserProps> = {},
 	id?: UniqueEntityId,
 ) {
 	const user = new User(
@@ -15,7 +15,7 @@ export async function makeUser(
 			email: unwrapOrThrow(Email.create(faker.internet.email())),
 			password: await Password.createFromPlainText(faker.internet.password()),
 			role: Role.Customer,
-			...override,
+			...overrides,
 		},
 		id,
 	)
