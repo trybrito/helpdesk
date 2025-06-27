@@ -1,6 +1,7 @@
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Admin } from '@api/domain/enterprise/entities/admin'
 import { makeAdmin } from 'apps/api/test/factories/make-admin'
+import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
@@ -24,7 +25,7 @@ describe('Create category', () => {
 		)
 	})
 
-	it('should be able to create a services category', async () => {
+	it('should allow an admin to create a category', async () => {
 		const result = await sut.execute({
 			createdBy: admin.id.toString(),
 			name: 'Test',
@@ -38,11 +39,23 @@ describe('Create category', () => {
 		)
 	})
 
-	it('should not allow that other roles besides admin creates a category', async () => {
+	it('should not allow a technician to create a category', async () => {
 		const technician = await makeTechnician()
 
 		const result = await sut.execute({
 			createdBy: technician.id.toString(),
+			name: 'Test',
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(inMemoryCategoriesRepository.items).toHaveLength(0)
+	})
+
+	it('should not allow a customer to create a category', async () => {
+		const customer = await makeCustomer()
+
+		const result = await sut.execute({
+			createdBy: customer.id.toString(),
 			name: 'Test',
 		})
 

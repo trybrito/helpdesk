@@ -16,7 +16,7 @@ export class InMemoryTechniciansRepository implements TechniciansRepository {
 
 	async findByEmail(email: string): Promise<Technician | null> {
 		const technician =
-			this.items.find((item) => item.user.email === email) ?? null
+			this.items.find((item) => item.user.email.getValue() === email) ?? null
 
 		return technician
 	}

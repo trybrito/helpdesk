@@ -3,11 +3,11 @@ import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Service } from '@api/domain/enterprise/entities/service'
 import { Money } from '@api/domain/enterprise/entities/value-objects/money'
-import { AdminsRepository } from '../repositories/admins-repository'
-import { CategoriesRepository } from '../repositories/categories-repository'
-import { ServicesRepository } from '../repositories/services-repository'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
-import { verifyAdminPermission } from './utils/verify-admin-permission'
+import { AdminsRepository } from '../../../../repositories/admins-repository'
+import { CategoriesRepository } from '../../../../repositories/categories-repository'
+import { ServicesRepository } from '../../../../repositories/services-repository'
+import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
+import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface CreateServiceUseCaseRequest {
 	createdBy: string
@@ -40,7 +40,7 @@ export class CreateServiceUseCase {
 		)
 
 		if (isAdmin.isLeft()) {
-			return isAdmin
+			return left(isAdmin.value)
 		}
 
 		const category = await this.categoriesRepository.findById(categoryId)

@@ -1,7 +1,7 @@
 import { Either, left, right } from '@api/core/either'
-import { Encrypter } from '../crypto/encrypter'
-import { UsersRepository } from '../repositories/users-repository'
-import { WrongCredentialsError } from './errors/wrong-credentials-error'
+import { Encrypter } from '../../../crypto/encrypter'
+import { UsersRepository } from '../../../repositories/users-repository'
+import { WrongCredentialsError } from '../../errors/wrong-credentials-error'
 
 export interface AuthenticateUseCaseRequest {
 	email: string
@@ -22,20 +22,20 @@ export class AuthenticateUseCase {
 	) {}
 
 	async execute({ email, password }: AuthenticateUseCaseRequest) {
-		const user = await this.usersRepository.findByEmail(email)
+		const genericUser = await this.usersRepository.findByEmail(email)
 
-		if (!user) {
+		if (!genericUser) {
 			return left(new WrongCredentialsError())
 		}
 
-		const doesPasswordMatches = await user.comparePassword(password)
+		const doesPasswordMatches = await genericUser.user.comparePassword(password)
 
 		if (!doesPasswordMatches) {
 			return left(new WrongCredentialsError())
 		}
 
 		const accessToken = await this.encrypter.encrypt({
-			sub: user.id.toString(),
+			sub: genericUser.id.toString(),
 		})
 
 		return right({ accessToken })

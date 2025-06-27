@@ -1,6 +1,6 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { adminAuthSetup } from 'apps/api/test/factories/helpers/admin-auth-setup'
+import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeService } from 'apps/api/test/factories/make-service'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
@@ -16,7 +16,7 @@ let sut: SoftDeleteUseCase
 
 describe('Soft delete service', () => {
 	beforeEach(async () => {
-		const authContext = await adminAuthSetup('admin-1')
+		const authContext = await authenticatedAdminSetup('admin-1')
 
 		admin = authContext.admin
 		inMemoryAdminsRepository = authContext.adminsRepository
@@ -76,5 +76,39 @@ describe('Soft delete service', () => {
 
 		expect(resultOrError.isLeft()).toBeTruthy()
 		expect(inMemoryServicesRepository.items[0].deletedAt).toBeFalsy()
+	})
+
+	it('should not be able to soft delete a non-existent service', async () => {
+		await sut.execute({
+			adminId: admin.id.toString(),
+			serviceId: 'non-existent',
+		})
+
+		const resultOrError = await sut.execute({
+			adminId: admin.id.toString(),
+			serviceId: 'non-existent',
+		})
+
+		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(inMemoryServicesRepository.items).toHaveLength(0)
+	})
+
+	it('should not be able to soft delete an already deleted service', async () => {
+		const service = await makeService(admin.id)
+
+		inMemoryServicesRepository.create(service)
+
+		await sut.execute({
+			adminId: admin.id.toString(),
+			serviceId: service.id.toString(),
+		})
+
+		const resultOrError = await sut.execute({
+			adminId: admin.id.toString(),
+			serviceId: service.id.toString(),
+		})
+
+		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(inMemoryServicesRepository.items).toHaveLength(1)
 	})
 })

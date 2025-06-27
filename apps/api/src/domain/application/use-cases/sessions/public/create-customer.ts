@@ -5,17 +5,20 @@ import { Customer } from '@api/domain/enterprise/entities/customer'
 import { User } from '@api/domain/enterprise/entities/user'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
-import { CustomersRepository } from '../repositories/customers-repository'
+import { CustomersRepository } from '../../../repositories/customers-repository'
+import { UserWithSameEmailError } from '../../errors/user-with-same-email-error'
 
 export interface CreateCustomerUseCaseRequest {
+	user: {
+		email: string
+		password: string
+	}
 	firstName: string
 	lastName: string
-	email: string
-	password: string
 }
 
 export type CreateCustomerUseCaseResponse = Either<
-	InvalidInputDataError,
+	InvalidInputDataError | UserWithSameEmailError,
 	{
 		customer: Customer
 	}
@@ -25,10 +28,9 @@ export class CreateCustomerUseCase {
 	constructor(private customersRepository: CustomersRepository) {}
 
 	async execute({
+		user: { email, password },
 		firstName,
 		lastName,
-		email,
-		password,
 	}: CreateCustomerUseCaseRequest): Promise<CreateCustomerUseCaseResponse> {
 		const emailOrError = Email.create(email)
 
@@ -37,6 +39,14 @@ export class CreateCustomerUseCase {
 		}
 
 		const validatedEmail = emailOrError.value
+
+		const userWithSameEmail = await this.customersRepository.findByEmail(
+			validatedEmail.getValue(),
+		)
+
+		if (userWithSameEmail) {
+			return left(new UserWithSameEmailError())
+		}
 
 		const user = new User({
 			email: validatedEmail,

@@ -10,7 +10,7 @@ export class InMemoryCustomersRepository implements CustomersRepository {
 
 	async findByEmail(email: string): Promise<Customer | null> {
 		const customer =
-			this.items.find((item) => item.user.email === email) ?? null
+			this.items.find((item) => item.user.email.getValue() === email) ?? null
 
 		return customer
 	}

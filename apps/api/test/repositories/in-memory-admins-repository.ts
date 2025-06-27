@@ -9,4 +9,19 @@ export class InMemoryAdminsRepository implements AdminsRepository {
 
 		return admin
 	}
+
+	async findByEmail(email: string): Promise<Admin | null> {
+		const admin =
+			this.items.find((item) => item.user.email.getValue() === email) ?? null
+
+		return admin
+	}
+
+	async update(admin: Admin): Promise<void> {
+		const adminToBeUpdatedIndex = this.items.findIndex(
+			(item) => item.id === admin.id,
+		)
+
+		this.items[adminToBeUpdatedIndex] = admin
+	}
 }

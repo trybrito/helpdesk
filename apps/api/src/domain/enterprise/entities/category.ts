@@ -20,8 +20,8 @@ export class Category extends Entity<CategoryProps> {
 	}
 
 	static create(props: CategoryProps, id?: UniqueEntityId) {
-		const name = new Category(props, id)
+		const category = new Category(props, id)
 
-		return name
+		return category
 	}
 }

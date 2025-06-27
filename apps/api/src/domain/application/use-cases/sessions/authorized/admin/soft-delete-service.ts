@@ -1,10 +1,10 @@
 import { Either, left, right } from '@api/core/either'
 import { Service } from '@api/domain/enterprise/entities/service'
-import { AdminsRepository } from '../repositories/admins-repository'
-import { ServicesRepository } from '../repositories/services-repository'
-import { ActionNotPossibleError } from './errors/action-not-possible-error'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
-import { verifyAdminPermission } from './utils/verify-admin-permission'
+import { AdminsRepository } from '../../../../repositories/admins-repository'
+import { ServicesRepository } from '../../../../repositories/services-repository'
+import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
+import { ServiceAlreadyDeletedError } from '../../../errors/service-already-deleted-error'
+import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface SoftDeleteUseCaseRequest {
 	adminId: string
@@ -12,7 +12,7 @@ export interface SoftDeleteUseCaseRequest {
 }
 
 export type SoftDeleteUseCaseResponse = Either<
-	ResourceNotFoundError | ActionNotPossibleError,
+	ResourceNotFoundError | ServiceAlreadyDeletedError,
 	{ service: Service }
 >
 
@@ -29,7 +29,7 @@ export class SoftDeleteUseCase {
 		const isAdmin = await verifyAdminPermission(adminId, this.adminsRepository)
 
 		if (isAdmin.isLeft()) {
-			return isAdmin
+			return left(isAdmin.value)
 		}
 
 		const service = await this.servicesRepository.findById(serviceId)
@@ -39,10 +39,10 @@ export class SoftDeleteUseCase {
 		}
 
 		if (service.deletedAt) {
-			return left(new ActionNotPossibleError())
+			return left(new ServiceAlreadyDeletedError())
 		}
 
-		service.deletedAt = new Date()
+		service.softDelete()
 
 		await this.servicesRepository.update(service)
 

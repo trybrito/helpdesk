@@ -1,5 +1,5 @@
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { adminAuthSetup } from 'apps/api/test/factories/helpers/admin-auth-setup'
+import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
 import { makeCategory } from 'apps/api/test/factories/make-category'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
@@ -17,7 +17,7 @@ let sut: CreateServiceUseCase
 
 describe('Create service', () => {
 	beforeEach(async () => {
-		const authContext = await adminAuthSetup('admin-1')
+		const authContext = await authenticatedAdminSetup('admin-1')
 
 		admin = authContext.admin
 		inMemoryAdminsRepository = authContext.adminsRepository
@@ -83,6 +83,34 @@ describe('Create service', () => {
 			createdBy: customer.id.toString(),
 			name: 'Test',
 			price: '39,90',
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(inMemoryServicesRepository.items).toHaveLength(0)
+	})
+
+	it('should not be able to create a service without category', async () => {
+		const result = await sut.execute({
+			categoryId: 'non-existent',
+			createdBy: admin.id.toString(),
+			name: 'Test',
+			price: '39,90',
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(inMemoryServicesRepository.items).toHaveLength(0)
+	})
+
+	it('should not be able to create a service with invalid price', async () => {
+		const category = await makeCategory({ createdBy: admin.id })
+
+		await inMemoryCategoriesRepository.create(category)
+
+		const result = await sut.execute({
+			categoryId: category.id.toString(),
+			createdBy: admin.id.toString(),
+			name: 'Test',
+			price: 'wrong',
 		})
 
 		expect(result.isLeft()).toBeTruthy()

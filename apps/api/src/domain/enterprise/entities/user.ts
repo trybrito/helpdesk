@@ -13,11 +13,11 @@ export interface UserProps {
 
 export class User extends Entity<UserProps> {
 	get email() {
-		return this.props.email.getValue()
+		return this.props.email
 	}
 
 	get password() {
-		return this.props.password.getValue()
+		return this.props.password
 	}
 
 	get role() {
@@ -30,6 +30,14 @@ export class User extends Entity<UserProps> {
 
 	set profileImageUrl(imageUrl: string) {
 		this.props.profileImageUrl = imageUrl
+	}
+
+	set email(value: Email) {
+		this.props.email = value
+	}
+
+	set password(value: Password) {
+		this.props.password = value
 	}
 
 	static create(props: UserProps, id?: UniqueEntityId) {

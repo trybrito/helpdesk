@@ -7,11 +7,13 @@ export class Money {
 	private constructor(private readonly value: number) {}
 
 	static create(value: string, inCents?: boolean): MoneyValueObjectReturn {
-		if (Number.isNaN(value)) {
-			return left(new InvalidInputDataError([value]))
+		const normalizedValue = value.replace(',', '.')
+
+		if (Number.isNaN(Number(normalizedValue))) {
+			return left(new InvalidInputDataError([normalizedValue]))
 		}
 
-		const price = Number(value.replace(',', '.').trim())
+		const price = Number(normalizedValue.replace(',', '.').trim())
 
 		if (inCents) {
 			return right(new Money(price * 100))

@@ -50,13 +50,13 @@ export class Service extends Entity<ServiceProps> {
 		this.touch()
 	}
 
-	protected softDelete() {
-		this.props.deletedAt = new Date()
-		this.touch()
-	}
-
 	private touch() {
 		this.props.updatedAt = new Date()
+	}
+
+	softDelete() {
+		this.props.deletedAt = new Date()
+		this.touch()
 	}
 
 	static create(props: ServiceProps, id?: UniqueEntityId) {

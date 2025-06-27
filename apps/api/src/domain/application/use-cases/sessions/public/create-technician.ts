@@ -1,35 +1,37 @@
 import { Either, left, right } from '@api/core/either'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Role } from 'apps/api/src/core/@types/enums'
-import { Technician } from '../../enterprise/entities/technician'
-import { User } from '../../enterprise/entities/user'
-import { Email } from '../../enterprise/entities/value-objects/email'
-import { Password } from '../../enterprise/entities/value-objects/password'
-import { TechniciansRepository } from '../repositories/technicians-repository'
+import { Technician } from '../../../../enterprise/entities/technician'
+import { User } from '../../../../enterprise/entities/user'
+import { Email } from '../../../../enterprise/entities/value-objects/email'
+import { Password } from '../../../../enterprise/entities/value-objects/password'
+import { TechniciansRepository } from '../../../repositories/technicians-repository'
+import { UserWithSameEmailError } from '../../errors/user-with-same-email-error'
 
 export interface CreateTechnicianUseCaseRequest {
+	user: {
+		email: string
+		password: string
+	}
 	firstName: string
 	lastName: string
-	email: string
-	password: string
 	scheduleAvailability: string[]
 }
 
 export type CreateTechnicianUseCaseResponse = Either<
-	InvalidInputDataError,
+	InvalidInputDataError | UserWithSameEmailError,
 	{
 		technician: Technician
 	}
 >
 
 export class CreateTechnicianUseCase {
-	constructor(private technicians: TechniciansRepository) {}
+	constructor(private techniciansRepository: TechniciansRepository) {}
 
 	async execute({
+		user: { email, password },
 		firstName,
 		lastName,
-		email,
-		password,
 		scheduleAvailability,
 	}: CreateTechnicianUseCaseRequest): Promise<CreateTechnicianUseCaseResponse> {
 		const MUST_UPDATE_PASSWORD = true
@@ -41,6 +43,14 @@ export class CreateTechnicianUseCase {
 		}
 
 		const validatedEmail = emailOrError.value
+
+		const userWithSameEmail = await this.techniciansRepository.findByEmail(
+			validatedEmail.getValue(),
+		)
+
+		if (userWithSameEmail) {
+			return left(new UserWithSameEmailError())
+		}
 
 		const user = new User({
 			email: validatedEmail,
@@ -56,7 +66,7 @@ export class CreateTechnicianUseCase {
 			scheduleAvailability,
 		})
 
-		await this.technicians.create(technician)
+		await this.techniciansRepository.create(technician)
 
 		return right({ technician })
 	}

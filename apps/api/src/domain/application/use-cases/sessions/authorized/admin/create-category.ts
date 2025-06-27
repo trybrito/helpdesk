@@ -1,9 +1,9 @@
-import { Either, right } from '@api/core/either'
+import { Either, left, right } from '@api/core/either'
 import { Category } from '@api/domain/enterprise/entities/category'
-import { AdminsRepository } from '../repositories/admins-repository'
-import { CategoriesRepository } from '../repositories/categories-repository'
-import { NotAllowedError } from './errors/not-allowed-error'
-import { verifyAdminPermission } from './utils/verify-admin-permission'
+import { AdminsRepository } from '../../../../repositories/admins-repository'
+import { CategoriesRepository } from '../../../../repositories/categories-repository'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
+import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface CreateCategoryUseCaseRequest {
 	createdBy: string
@@ -33,12 +33,12 @@ export class CreateCategoryUseCase {
 		)
 
 		if (isAdmin.isLeft()) {
-			return isAdmin
+			return left(isAdmin.value)
 		}
 
 		const { admin } = isAdmin.value
 
-		const category = new Category({
+		const category = Category.create({
 			createdBy: admin.id,
 			name,
 		})
