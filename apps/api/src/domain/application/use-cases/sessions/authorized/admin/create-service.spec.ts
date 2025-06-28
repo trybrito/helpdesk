@@ -1,3 +1,4 @@
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Admin } from '@api/domain/enterprise/entities/admin'
 import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
 import { makeCategory } from 'apps/api/test/factories/make-category'
@@ -6,6 +7,9 @@ import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
+import { expect } from 'vitest'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
+import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { CreateServiceUseCase } from './create-service'
 
 let admin: Admin
@@ -68,6 +72,7 @@ describe('Create service', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryServicesRepository.items).toHaveLength(0)
 	})
 
@@ -86,6 +91,7 @@ describe('Create service', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryServicesRepository.items).toHaveLength(0)
 	})
 
@@ -98,6 +104,7 @@ describe('Create service', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(ResourceNotFoundError)
 		expect(inMemoryServicesRepository.items).toHaveLength(0)
 	})
 
@@ -114,6 +121,7 @@ describe('Create service', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(InvalidInputDataError)
 		expect(inMemoryServicesRepository.items).toHaveLength(0)
 	})
 })

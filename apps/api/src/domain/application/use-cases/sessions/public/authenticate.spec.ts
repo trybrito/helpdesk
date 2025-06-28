@@ -10,6 +10,8 @@ import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-a
 import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
 import { InMemoryUsersRepository } from 'apps/api/test/repositories/in-memory-users-repository'
+import { expect } from 'vitest'
+import { WrongCredentialsError } from '../../errors/wrong-credentials-error'
 import { AuthenticateUseCase } from './authenticate'
 
 let admin: Admin
@@ -105,7 +107,7 @@ describe('Authenticate', () => {
 		})
 	})
 
-	it('should not be able to authenticate when using invalid e-mail', async () => {
+	it('should not be able to authenticate when using wrong e-mail', async () => {
 		const email = 'customer@example.com'
 		const password = '123456'
 
@@ -124,9 +126,10 @@ describe('Authenticate', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(WrongCredentialsError)
 	})
 
-	it('should not be able to authenticate when using invalid password', async () => {
+	it('should not be able to authenticate when using wrong password', async () => {
 		const email = 'customer@example.com'
 		const password = '123456'
 
@@ -145,5 +148,6 @@ describe('Authenticate', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(WrongCredentialsError)
 	})
 })

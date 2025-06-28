@@ -9,6 +9,7 @@ export interface TechnicianProps {
 	lastName: string
 	mustUpdatePassword: boolean
 	scheduleAvailability: string[]
+	deletedAt?: Date | null
 }
 
 export class Technician extends Entity<TechnicianProps> {
@@ -36,6 +37,10 @@ export class Technician extends Entity<TechnicianProps> {
 		return this.props.scheduleAvailability
 	}
 
+	get deletedAt() {
+		return this.props.deletedAt
+	}
+
 	set firstName(name: string) {
 		this.props.firstName = name
 	}
@@ -52,5 +57,9 @@ export class Technician extends Entity<TechnicianProps> {
 		const technician = new Technician(props, id)
 
 		return technician
+	}
+
+	softDelete() {
+		this.props.deletedAt = new Date()
 	}
 }

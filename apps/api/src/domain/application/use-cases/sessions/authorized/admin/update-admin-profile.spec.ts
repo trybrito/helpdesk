@@ -8,6 +8,8 @@ import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-a
 import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
 import { InMemoryUsersRepository } from 'apps/api/test/repositories/in-memory-users-repository'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
+import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
 import { UpdateAdminProfileUseCase } from './update-admin-profile'
 
 let _admin: Admin
@@ -64,7 +66,7 @@ describe('Update admin', () => {
 	})
 
 	it('should not allow an admin to update other admin profile', async () => {
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			user: {
 				email: 'doe@example.com',
 				password: '654321',
@@ -75,7 +77,8 @@ describe('Update admin', () => {
 			lastName: 'Doe',
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryAdminsRepository.items[0].user.email.getValue()).toBe(
 			'example@example.com',
 		)
@@ -88,7 +91,7 @@ describe('Update admin', () => {
 
 		inMemoryTechniciansRepository.create(technician)
 
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			user: {
 				email: 'same@email.com',
 				password: '654321',
@@ -99,13 +102,14 @@ describe('Update admin', () => {
 			lastName: 'Doe',
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
 	})
 
 	it('should not allow a technician to update an admin profile', async () => {
 		const technician = await makeTechnician()
 
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			user: {
 				email: 'doe@example.com',
 				password: '654321',
@@ -116,7 +120,8 @@ describe('Update admin', () => {
 			lastName: 'Doe',
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryAdminsRepository.items[0].user.email.getValue()).toBe(
 			'example@example.com',
 		)
@@ -125,7 +130,7 @@ describe('Update admin', () => {
 	it('should not allow a customer to update an admin profile', async () => {
 		const customer = await makeCustomer()
 
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			user: {
 				email: 'doe@example.com',
 				password: '654321',
@@ -136,7 +141,8 @@ describe('Update admin', () => {
 			lastName: 'Doe',
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryAdminsRepository.items[0].user.email.getValue()).toBe(
 			'example@example.com',
 		)

@@ -1,8 +1,11 @@
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
+import { expect } from 'vitest'
+import { UserWithSameEmailError } from '../../errors/user-with-same-email-error'
 import { CreateCustomerUseCase } from './create-customer'
 
 let inMemoryCustomersRepository: InMemoryCustomersRepository
@@ -24,15 +27,16 @@ describe('Create customer', () => {
 			},
 		})
 
+		expect(resultOrError.isRight()).toBeTruthy()
+
 		const result = unwrapOrThrow(resultOrError)
 
-		expect(resultOrError.isRight()).toBeTruthy()
 		expect(inMemoryCustomersRepository.items[0]).toEqual(result.customer)
 		expect(inMemoryCustomersRepository.items[0].user.role).toEqual('customer')
 	})
 
 	it('should not be able to create a customer when using an invalid e-mail', async () => {
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -41,7 +45,8 @@ describe('Create customer', () => {
 			},
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(InvalidInputDataError)
 		expect(inMemoryCustomersRepository.items).toHaveLength(0)
 	})
 
@@ -52,7 +57,7 @@ describe('Create customer', () => {
 
 		inMemoryCustomersRepository.create(customer)
 
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -61,7 +66,8 @@ describe('Create customer', () => {
 			},
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
 		expect(inMemoryCustomersRepository.items).toHaveLength(1)
 	})
 
@@ -72,6 +78,6 @@ describe('Create customer', () => {
 		const isInvalidHash = await password.compare('wrong-password')
 
 		expect(isValidHash).toBeTruthy()
-		expect(!isInvalidHash).toBeTruthy()
+		expect(isInvalidHash).toBeFalsy()
 	})
 })

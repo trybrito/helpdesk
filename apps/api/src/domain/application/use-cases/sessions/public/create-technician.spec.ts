@@ -1,8 +1,11 @@
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { Password } from '@api/domain/enterprise/entities/value-objects/password'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
+import { expect } from 'vitest'
+import { UserWithSameEmailError } from '../../errors/user-with-same-email-error'
 import { CreateTechnicianUseCase } from './create-technician'
 
 let inMemoryTechniciansRepository: InMemoryTechniciansRepository
@@ -35,7 +38,7 @@ describe('Create Technician', () => {
 	})
 
 	it('should not be able to create a technician when using an invalid e-mail', async () => {
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -45,7 +48,8 @@ describe('Create Technician', () => {
 			scheduleAvailability: [''],
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(InvalidInputDataError)
 		expect(inMemoryTechniciansRepository.items).toHaveLength(0)
 	})
 
@@ -56,7 +60,7 @@ describe('Create Technician', () => {
 
 		inMemoryTechniciansRepository.create(technician)
 
-		const resultOrError = await sut.execute({
+		const result = await sut.execute({
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -66,7 +70,8 @@ describe('Create Technician', () => {
 			scheduleAvailability: [''],
 		})
 
-		expect(resultOrError.isLeft()).toBeTruthy()
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
 		expect(inMemoryTechniciansRepository.items).toHaveLength(1)
 	})
 

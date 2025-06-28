@@ -5,6 +5,7 @@ import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { CreateCategoryUseCase } from './create-category'
 
 let inMemoryCategoriesRepository: InMemoryCategoriesRepository
@@ -48,6 +49,7 @@ describe('Create category', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryCategoriesRepository.items).toHaveLength(0)
 	})
 
@@ -60,6 +62,7 @@ describe('Create category', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 		expect(inMemoryCategoriesRepository.items).toHaveLength(0)
 	})
 })

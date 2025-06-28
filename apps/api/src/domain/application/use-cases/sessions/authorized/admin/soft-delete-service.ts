@@ -6,17 +6,17 @@ import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { ServiceAlreadyDeletedError } from '../../../errors/service-already-deleted-error'
 import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
-export interface SoftDeleteUseCaseRequest {
+export interface SoftDeleteServiceUseCaseRequest {
 	adminId: string
 	serviceId: string
 }
 
-export type SoftDeleteUseCaseResponse = Either<
+export type SoftDeleteServiceUseCaseResponse = Either<
 	ResourceNotFoundError | ServiceAlreadyDeletedError,
 	{ service: Service }
 >
 
-export class SoftDeleteUseCase {
+export class SoftDeleteServiceUseCase {
 	constructor(
 		private adminsRepository: AdminsRepository,
 		private servicesRepository: ServicesRepository,
@@ -25,7 +25,7 @@ export class SoftDeleteUseCase {
 	async execute({
 		adminId,
 		serviceId,
-	}: SoftDeleteUseCaseRequest): Promise<SoftDeleteUseCaseResponse> {
+	}: SoftDeleteServiceUseCaseRequest): Promise<SoftDeleteServiceUseCaseResponse> {
 		const isAdmin = await verifyAdminPermission(adminId, this.adminsRepository)
 
 		if (isAdmin.isLeft()) {
