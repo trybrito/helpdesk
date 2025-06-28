@@ -29,7 +29,7 @@ describe('Authenticate', () => {
 		admin = await makeAdmin({
 			user: {
 				email: unwrapOrThrow(Email.create('admin@example.com')),
-				password: await Password.createFromPlainText('123456'),
+				password: unwrapOrThrow(await Password.createFromPlainText('123456')),
 			},
 		})
 
@@ -66,7 +66,7 @@ describe('Authenticate', () => {
 		const technician = await makeTechnician({
 			user: {
 				email: unwrapOrThrow(Email.create(email)),
-				password: await Password.createFromPlainText(password),
+				password: unwrapOrThrow(await Password.createFromPlainText('123456')),
 			},
 		})
 
@@ -90,7 +90,7 @@ describe('Authenticate', () => {
 		const customer = await makeCustomer({
 			user: {
 				email: unwrapOrThrow(Email.create(email)),
-				password: await Password.createFromPlainText(password),
+				password: unwrapOrThrow(await Password.createFromPlainText('123456')),
 			},
 		})
 
@@ -114,7 +114,7 @@ describe('Authenticate', () => {
 		const customer = await makeCustomer({
 			user: {
 				email: unwrapOrThrow(Email.create('wrong@mail.com')),
-				password: await Password.createFromPlainText(password),
+				password: unwrapOrThrow(await Password.createFromPlainText('123456')),
 			},
 		})
 
@@ -136,7 +136,9 @@ describe('Authenticate', () => {
 		const customer = await makeCustomer({
 			user: {
 				email: unwrapOrThrow(Email.create(email)),
-				password: await Password.createFromPlainText('wrong'),
+				password: unwrapOrThrow(
+					await Password.createFromPlainText('wrong-password'),
+				),
 			},
 		})
 

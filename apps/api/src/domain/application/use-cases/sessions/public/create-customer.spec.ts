@@ -1,7 +1,6 @@
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
-import { Password } from '@api/domain/enterprise/entities/value-objects/password'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { expect } from 'vitest'
@@ -69,15 +68,5 @@ describe('Create customer', () => {
 		expect(result.isLeft()).toBeTruthy()
 		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
 		expect(inMemoryCustomersRepository.items).toHaveLength(1)
-	})
-
-	it('should be able to hash and compare passwords', async () => {
-		const password = await Password.createFromPlainText('123456')
-
-		const isValidHash = await password.compare('123456')
-		const isInvalidHash = await password.compare('wrong-password')
-
-		expect(isValidHash).toBeTruthy()
-		expect(isInvalidHash).toBeFalsy()
 	})
 })

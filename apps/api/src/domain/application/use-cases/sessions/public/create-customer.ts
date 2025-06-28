@@ -48,9 +48,17 @@ export class CreateCustomerUseCase {
 			return left(new UserWithSameEmailError())
 		}
 
+		const passwordOrError = await Password.createFromPlainText(password)
+
+		if (passwordOrError.isLeft()) {
+			return left(new InvalidInputDataError([password]))
+		}
+
+		const validatedPassword = passwordOrError.value
+
 		const user = new User({
 			email: validatedEmail,
-			password: await Password.createFromPlainText(password),
+			password: validatedPassword,
 			role: Role.Customer,
 		})
 

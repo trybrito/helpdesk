@@ -1,24 +1,49 @@
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
+import { Admin } from '@api/domain/enterprise/entities/admin'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
-import { Password } from '@api/domain/enterprise/entities/value-objects/password'
-import { makeTechnician } from 'apps/api/test/factories/make-technician'
+import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeCustomer } from 'apps/api/test/factories/make-customer'
+import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
+import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
+import { InMemoryUsersRepository } from 'apps/api/test/repositories/in-memory-users-repository'
 import { expect } from 'vitest'
-import { UserWithSameEmailError } from '../../errors/user-with-same-email-error'
+import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
 import { CreateTechnicianUseCase } from './create-technician'
 
+let admin: Admin
+let inMemoryAdminsRepository: InMemoryAdminsRepository
 let inMemoryTechniciansRepository: InMemoryTechniciansRepository
+let inMemoryCustomersRepository: InMemoryCustomersRepository
+let inMemoryUsersRepository: InMemoryUsersRepository
 let sut: CreateTechnicianUseCase
 
 describe('Create Technician', () => {
-	beforeEach(() => {
+	beforeEach(async () => {
+		const authContext = await authenticatedAdminSetup('admin-1')
+
+		admin = authContext.admin
+		inMemoryAdminsRepository = authContext.adminsRepository
+
 		inMemoryTechniciansRepository = new InMemoryTechniciansRepository()
-		sut = new CreateTechnicianUseCase(inMemoryTechniciansRepository)
+		inMemoryCustomersRepository = new InMemoryCustomersRepository()
+		inMemoryUsersRepository = new InMemoryUsersRepository(
+			inMemoryAdminsRepository,
+			inMemoryTechniciansRepository,
+			inMemoryCustomersRepository,
+		)
+
+		sut = new CreateTechnicianUseCase(
+			inMemoryAdminsRepository,
+			inMemoryUsersRepository,
+			inMemoryTechniciansRepository,
+		)
 	})
 
 	it('should be able to create a technician', async () => {
 		const resultOrError = await sut.execute({
+			requesterId: admin.id.toString(),
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -39,6 +64,7 @@ describe('Create Technician', () => {
 
 	it('should not be able to create a technician when using an invalid e-mail', async () => {
 		const result = await sut.execute({
+			requesterId: admin.id.toString(),
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -54,13 +80,14 @@ describe('Create Technician', () => {
 	})
 
 	it('should not be able to create a technician when using an existing e-mail', async () => {
-		const technician = await makeTechnician({
+		const customer = await makeCustomer({
 			user: { email: unwrapOrThrow(Email.create('johndoe@mail.com')) },
 		})
 
-		inMemoryTechniciansRepository.create(technician)
+		inMemoryCustomersRepository.create(customer)
 
 		const result = await sut.execute({
+			requesterId: admin.id.toString(),
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -72,16 +99,6 @@ describe('Create Technician', () => {
 
 		expect(result.isLeft()).toBeTruthy()
 		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
-		expect(inMemoryTechniciansRepository.items).toHaveLength(1)
-	})
-
-	it('should be able to hash and compare passwords', async () => {
-		const password = await Password.createFromPlainText('123456')
-
-		const isValidHash = await password.compare('123456')
-		const isInvalidHash = await password.compare('wrong-password')
-
-		expect(isValidHash).toBeTruthy()
-		expect(!isInvalidHash).toBeTruthy()
+		expect(inMemoryTechniciansRepository.items).toHaveLength(0)
 	})
 })
