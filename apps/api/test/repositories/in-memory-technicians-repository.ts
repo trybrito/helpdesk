@@ -1,3 +1,4 @@
+import { PaginationParams } from '@api/core/repositories/pagination-params'
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { Technician } from '@api/domain/enterprise/entities/technician'
 
@@ -26,5 +27,11 @@ export class InMemoryTechniciansRepository implements TechniciansRepository {
 			this.items.find((item) => item.user.email.getValue() === email) ?? null
 
 		return technician
+	}
+
+	async findMany({ page }: PaginationParams): Promise<Technician[]> {
+		const technicians = this.items.slice(page - 1, page * 20)
+
+		return technicians
 	}
 }

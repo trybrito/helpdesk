@@ -1,3 +1,4 @@
+import { PaginationParams } from '@api/core/repositories/pagination-params'
 import { ServicesRepository } from '@api/domain/application/repositories/services-repository'
 import { Service } from '@api/domain/enterprise/entities/service'
 
@@ -18,5 +19,11 @@ export class InMemoryServicesRepository implements ServicesRepository {
 		const serviceIndex = this.items.findIndex((item) => item.id === service.id)
 
 		this.items[serviceIndex] = service
+	}
+
+	async findMany({ page }: PaginationParams): Promise<Service[]> {
+		const services = this.items.slice(page - 1, page * 20)
+
+		return services
 	}
 }

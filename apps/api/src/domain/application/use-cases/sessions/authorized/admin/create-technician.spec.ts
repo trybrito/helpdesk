@@ -4,11 +4,13 @@ import { Admin } from '@api/domain/enterprise/entities/admin'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
+import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
 import { InMemoryUsersRepository } from 'apps/api/test/repositories/in-memory-users-repository'
-import { expect } from 'vitest'
+import {} from 'vitest'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
 import { CreateTechnicianUseCase } from './create-technician'
 
@@ -41,7 +43,7 @@ describe('Create Technician', () => {
 		)
 	})
 
-	it('should be able to create a technician', async () => {
+	it('should allow an admin to create a technician', async () => {
 		const resultOrError = await sut.execute({
 			requesterId: admin.id.toString(),
 			firstName: 'John',
@@ -60,6 +62,42 @@ describe('Create Technician', () => {
 		expect(inMemoryTechniciansRepository.items[0].user.role).toEqual(
 			'technician',
 		)
+	})
+
+	it('should not allow a technician to create another technician', async () => {
+		const technician = await makeTechnician()
+
+		const result = await sut.execute({
+			requesterId: technician.id.toString(),
+			firstName: 'John',
+			lastName: 'Doe',
+			user: {
+				email: 'johndoe@mail.com',
+				password: '123456',
+			},
+			scheduleAvailability: [''],
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
+	})
+
+	it('should not allow a customer to create a technician', async () => {
+		const customer = await makeCustomer()
+
+		const result = await sut.execute({
+			requesterId: customer.id.toString(),
+			firstName: 'John',
+			lastName: 'Doe',
+			user: {
+				email: 'johndoe@mail.com',
+				password: '123456',
+			},
+			scheduleAvailability: [''],
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(NotAllowedError)
 	})
 
 	it('should not be able to create a technician when using an invalid e-mail', async () => {
