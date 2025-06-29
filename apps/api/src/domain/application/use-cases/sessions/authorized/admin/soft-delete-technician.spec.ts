@@ -1,9 +1,8 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
@@ -11,23 +10,16 @@ import { TechnicianAlreadyDeletedError } from '../../../errors/technician-alread
 import { SoftDeleteTechnicianUseCase } from './soft-delete-technician'
 
 let admin: Admin
-let inMemoryAdminsRepository: InMemoryAdminsRepository
 
 let inMemoryTechniciansRepository: InMemoryTechniciansRepository
 let sut: SoftDeleteTechnicianUseCase
 
 describe('Soft delete technician', () => {
 	beforeEach(async () => {
-		const authContext = await authenticatedAdminSetup('admin-1')
-
-		admin = authContext.admin
-		inMemoryAdminsRepository = authContext.adminsRepository
+		admin = await makeAdmin()
 
 		inMemoryTechniciansRepository = new InMemoryTechniciansRepository()
-		sut = new SoftDeleteTechnicianUseCase(
-			inMemoryAdminsRepository,
-			inMemoryTechniciansRepository,
-		)
+		sut = new SoftDeleteTechnicianUseCase(inMemoryTechniciansRepository)
 	})
 
 	it('should allow an admin to soft delete a technician', async () => {
@@ -36,7 +28,7 @@ describe('Soft delete technician', () => {
 		inMemoryTechniciansRepository.create(technician)
 
 		const resultOrError = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			technicianId: technician.id.toString(),
 		})
 
@@ -56,7 +48,7 @@ describe('Soft delete technician', () => {
 		inMemoryTechniciansRepository.create(technician)
 
 		const result = await sut.execute({
-			requesterId: technician.id.toString(),
+			actorRole: technician.user.role,
 			technicianId: technician.id.toString(),
 		})
 
@@ -72,7 +64,7 @@ describe('Soft delete technician', () => {
 		inMemoryTechniciansRepository.create(technician)
 
 		const result = await sut.execute({
-			requesterId: customer.id.toString(),
+			actorRole: customer.user.role,
 			technicianId: technician.id.toString(),
 		})
 
@@ -83,7 +75,7 @@ describe('Soft delete technician', () => {
 
 	it('should not be able to soft delete a non-existent technician', async () => {
 		const result = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			technicianId: 'non-existent',
 		})
 
@@ -98,12 +90,12 @@ describe('Soft delete technician', () => {
 		inMemoryTechniciansRepository.create(technician)
 
 		await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			technicianId: technician.id.toString(),
 		})
 
 		const result = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			technicianId: technician.id.toString(),
 		})
 

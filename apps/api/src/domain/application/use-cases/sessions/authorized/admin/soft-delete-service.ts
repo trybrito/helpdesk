@@ -1,35 +1,30 @@
+import { Role } from '@api/core/@types/enums'
 import { Either, left, right } from '@api/core/either'
 import { Service } from '@api/domain/enterprise/entities/service'
-import { AdminsRepository } from '../../../../repositories/admins-repository'
 import { ServicesRepository } from '../../../../repositories/services-repository'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { ServiceAlreadyDeletedError } from '../../../errors/service-already-deleted-error'
-import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface SoftDeleteServiceUseCaseRequest {
-	adminId: string
+	actorRole: Role
 	serviceId: string
 }
 
 export type SoftDeleteServiceUseCaseResponse = Either<
-	ResourceNotFoundError | ServiceAlreadyDeletedError,
+	ResourceNotFoundError | ServiceAlreadyDeletedError | NotAllowedError,
 	{ service: Service }
 >
 
 export class SoftDeleteServiceUseCase {
-	constructor(
-		private adminsRepository: AdminsRepository,
-		private servicesRepository: ServicesRepository,
-	) {}
+	constructor(private servicesRepository: ServicesRepository) {}
 
 	async execute({
-		adminId,
+		actorRole,
 		serviceId,
 	}: SoftDeleteServiceUseCaseRequest): Promise<SoftDeleteServiceUseCaseResponse> {
-		const isAdmin = await verifyAdminPermission(adminId, this.adminsRepository)
-
-		if (isAdmin.isLeft()) {
-			return left(isAdmin.value)
+		if (actorRole !== Role.Admin) {
+			return left(new NotAllowedError())
 		}
 
 		const service = await this.servicesRepository.findById(serviceId)

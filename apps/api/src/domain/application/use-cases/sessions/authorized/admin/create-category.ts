@@ -1,11 +1,12 @@
+import { Role } from '@api/core/@types/enums'
 import { Either, left, right } from '@api/core/either'
+import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Category } from '@api/domain/enterprise/entities/category'
-import { AdminsRepository } from '../../../../repositories/admins-repository'
 import { CategoriesRepository } from '../../../../repositories/categories-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
-import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface CreateCategoryUseCaseRequest {
+	actorRole: Role
 	createdBy: string
 	name: string
 }
@@ -18,28 +19,19 @@ export type CreateCategoryUseCaseResponse = Either<
 >
 
 export class CreateCategoryUseCase {
-	constructor(
-		private adminsRepository: AdminsRepository,
-		private categoriesRepository: CategoriesRepository,
-	) {}
+	constructor(private categoriesRepository: CategoriesRepository) {}
 
 	async execute({
+		actorRole,
 		createdBy,
 		name,
 	}: CreateCategoryUseCaseRequest): Promise<CreateCategoryUseCaseResponse> {
-		const isAdmin = await verifyAdminPermission(
-			createdBy,
-			this.adminsRepository,
-		)
-
-		if (isAdmin.isLeft()) {
-			return left(isAdmin.value)
+		if (actorRole !== Role.Admin) {
+			return left(new NotAllowedError())
 		}
 
-		const { admin } = isAdmin.value
-
 		const category = Category.create({
-			createdBy: admin.id,
+			createdBy: new UniqueEntityId(createdBy),
 			name,
 		})
 

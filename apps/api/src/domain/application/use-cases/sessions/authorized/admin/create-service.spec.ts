@@ -1,10 +1,9 @@
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCategory } from 'apps/api/test/factories/make-category'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
 import { expect } from 'vitest'
@@ -13,7 +12,6 @@ import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { CreateServiceUseCase } from './create-service'
 
 let admin: Admin
-let inMemoryAdminsRepository: InMemoryAdminsRepository
 
 let inMemoryCategoriesRepository: InMemoryCategoriesRepository
 let inMemoryServicesRepository: InMemoryServicesRepository
@@ -21,16 +19,12 @@ let sut: CreateServiceUseCase
 
 describe('Create service', () => {
 	beforeEach(async () => {
-		const authContext = await authenticatedAdminSetup('admin-1')
-
-		admin = authContext.admin
-		inMemoryAdminsRepository = authContext.adminsRepository
+		admin = await makeAdmin()
 
 		inMemoryCategoriesRepository = new InMemoryCategoriesRepository()
 		inMemoryServicesRepository = new InMemoryServicesRepository()
 
 		sut = new CreateServiceUseCase(
-			inMemoryAdminsRepository,
 			inMemoryCategoriesRepository,
 			inMemoryServicesRepository,
 		)
@@ -42,6 +36,7 @@ describe('Create service', () => {
 		await inMemoryCategoriesRepository.create(category)
 
 		const result = await sut.execute({
+			actorRole: admin.user.role,
 			categoryId: category.id.toString(),
 			createdBy: admin.id.toString(),
 			name: 'Test',
@@ -65,6 +60,7 @@ describe('Create service', () => {
 		await inMemoryCategoriesRepository.create(category)
 
 		const result = await sut.execute({
+			actorRole: technician.user.role,
 			categoryId: category.id.toString(),
 			createdBy: technician.id.toString(),
 			name: 'Test',
@@ -84,6 +80,7 @@ describe('Create service', () => {
 		await inMemoryCategoriesRepository.create(category)
 
 		const result = await sut.execute({
+			actorRole: customer.user.role,
 			categoryId: category.id.toString(),
 			createdBy: customer.id.toString(),
 			name: 'Test',
@@ -97,6 +94,7 @@ describe('Create service', () => {
 
 	it('should not be able to create a service without category', async () => {
 		const result = await sut.execute({
+			actorRole: admin.user.role,
 			categoryId: 'non-existent',
 			createdBy: admin.id.toString(),
 			name: 'Test',
@@ -114,6 +112,7 @@ describe('Create service', () => {
 		await inMemoryCategoriesRepository.create(category)
 
 		const result = await sut.execute({
+			actorRole: admin.user.role,
 			categoryId: category.id.toString(),
 			createdBy: admin.id.toString(),
 			name: 'Test',

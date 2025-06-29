@@ -1,15 +1,16 @@
+import { Role } from '@api/core/@types/enums'
 import { Either, left, right } from '@api/core/either'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Service } from '@api/domain/enterprise/entities/service'
 import { Money } from '@api/domain/enterprise/entities/value-objects/money'
-import { AdminsRepository } from '../../../../repositories/admins-repository'
 import { CategoriesRepository } from '../../../../repositories/categories-repository'
 import { ServicesRepository } from '../../../../repositories/services-repository'
+import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
-import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface CreateServiceUseCaseRequest {
+	actorRole: Role
 	createdBy: string
 	categoryId: string
 	name: string
@@ -17,30 +18,25 @@ export interface CreateServiceUseCaseRequest {
 }
 
 export type CreateServiceUseCaseResponse = Either<
-	ResourceNotFoundError,
+	ResourceNotFoundError | NotAllowedError,
 	{ service: Service }
 >
 
 export class CreateServiceUseCase {
 	constructor(
-		private adminsRepository: AdminsRepository,
 		private categoriesRepository: CategoriesRepository,
 		private servicesRepository: ServicesRepository,
 	) {}
 
 	async execute({
+		actorRole,
 		createdBy,
 		categoryId,
 		name,
 		price,
 	}: CreateServiceUseCaseRequest): Promise<CreateServiceUseCaseResponse> {
-		const isAdmin = await verifyAdminPermission(
-			createdBy,
-			this.adminsRepository,
-		)
-
-		if (isAdmin.isLeft()) {
-			return left(isAdmin.value)
+		if (actorRole !== Role.Admin) {
+			return left(new NotAllowedError())
 		}
 
 		const category = await this.categoriesRepository.findById(categoryId)

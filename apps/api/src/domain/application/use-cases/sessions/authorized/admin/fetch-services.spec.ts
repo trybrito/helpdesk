@@ -1,33 +1,24 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeService } from 'apps/api/test/factories/make-service'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
 import { expect } from 'vitest'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { FetchServicesUseCase } from './fetch-services'
 
 let admin: Admin
-let inMemoryAdminsRepository: InMemoryAdminsRepository
 let inMemoryServicesRepository: InMemoryServicesRepository
 let sut: FetchServicesUseCase
 
 describe('Fetch services', () => {
 	beforeEach(async () => {
-		const authContext = await authenticatedAdminSetup('admin-1')
-
-		admin = authContext.admin
-		inMemoryAdminsRepository = authContext.adminsRepository
+		admin = await makeAdmin()
 
 		inMemoryServicesRepository = new InMemoryServicesRepository()
-
-		sut = new FetchServicesUseCase(
-			inMemoryAdminsRepository,
-			inMemoryServicesRepository,
-		)
+		sut = new FetchServicesUseCase(inMemoryServicesRepository)
 	})
 
 	it('should allow an admin to fetch services with pagination', async () => {
@@ -38,7 +29,7 @@ describe('Fetch services', () => {
 		}
 
 		const resultOrError = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			page: 1,
 		})
 
@@ -61,7 +52,7 @@ describe('Fetch services', () => {
 		const technician = await makeTechnician()
 
 		const result = await sut.execute({
-			requesterId: technician.id.toString(),
+			actorRole: technician.user.role,
 			page: 1,
 		})
 
@@ -73,7 +64,7 @@ describe('Fetch services', () => {
 		const customer = await makeCustomer()
 
 		const result = await sut.execute({
-			requesterId: customer.id.toString(),
+			actorRole: customer.user.role,
 			page: 1,
 		})
 

@@ -1,7 +1,9 @@
+import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { Role } from 'apps/api/src/core/@types/enums'
 import { Email } from './value-objects/email'
+import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
 import { Password } from './value-objects/password'
 
 export interface UserProps {
@@ -10,6 +12,8 @@ export interface UserProps {
 	role: Role
 	profileImageUrl?: string | null
 }
+
+type UpdatePasswordReturn = Either<PasswordTooShortError, undefined>
 
 export class User extends Entity<UserProps> {
 	get email() {
@@ -46,8 +50,20 @@ export class User extends Entity<UserProps> {
 		return user
 	}
 
-	public async updatePassword(plainText: string) {
-		this.props.password = await Password.createFromPlainText(plainText)
+	public async updatePassword(
+		plainText: string,
+	): Promise<UpdatePasswordReturn> {
+		const passwordOrError = await Password.createFromPlainText(plainText)
+
+		if (passwordOrError.isLeft()) {
+			return left(passwordOrError.value)
+		}
+
+		const password = passwordOrError.value
+
+		this.props.password = password
+
+		return right(undefined)
 	}
 
 	public async comparePassword(password: string) {

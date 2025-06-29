@@ -5,6 +5,7 @@ import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error
 import { UpdateAdminProfileUseCaseRequest } from '@api/domain/application/use-cases/sessions/authorized/admin/update-admin-profile'
 import { User } from './user'
 import { Email } from './value-objects/email'
+import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
 import { Password } from './value-objects/password'
 
 export interface AdminProps {
@@ -14,12 +15,15 @@ export interface AdminProps {
 	lastName: string
 }
 
-type UpdateProfileRequest = Omit<
+type UpdateProfileRequest = Pick<
 	UpdateAdminProfileUseCaseRequest,
-	'adminId' | 'requesterId'
+	'user' | 'firstName' | 'lastName'
 >
 
-type UpdateProfileResponse = Either<InvalidInputDataError, { newAdmin: Admin }>
+type UpdateProfileResponse = Either<
+	InvalidInputDataError | PasswordTooShortError,
+	{ newAdmin: Admin }
+>
 
 export class Admin extends Entity<AdminProps> {
 	get user() {
@@ -64,7 +68,13 @@ export class Admin extends Entity<AdminProps> {
 		}
 
 		const validatedNewEmail = newEmailOrError.value
-		const newPassword = await Password.createFromPlainText(password)
+		const passwordOrError = await Password.createFromPlainText(password)
+
+		if (passwordOrError.isLeft()) {
+			return left(passwordOrError.value)
+		}
+
+		const newPassword = passwordOrError.value
 
 		this.props.user.email = validatedNewEmail
 		this.props.user.password = newPassword

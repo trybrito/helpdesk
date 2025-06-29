@@ -3,12 +3,12 @@ import { UsersRepository } from '@api/domain/application/repositories/users-repo
 import { Admin } from '@api/domain/enterprise/entities/admin'
 import { AdminsRepository } from '../../../../repositories/admins-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
+import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
-import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface UpdateAdminProfileUseCaseRequest {
-	requesterId: string
-	adminId: string
+	actorId: string
+	targetId: string
 	user: {
 		email: string
 		password: string
@@ -19,7 +19,7 @@ export interface UpdateAdminProfileUseCaseRequest {
 }
 
 export type UpdateAdminProfileUseCaseResponse = Either<
-	NotAllowedError | UserWithSameEmailError,
+	NotAllowedError | UserWithSameEmailError | ResourceNotFoundError,
 	{ admin: Admin }
 >
 
@@ -30,27 +30,25 @@ export class UpdateAdminProfileUseCase {
 	) {}
 
 	async execute({
-		requesterId,
-		adminId,
+		actorId,
+		targetId,
 		user,
 		firstName,
 		lastName,
 	}: UpdateAdminProfileUseCaseRequest): Promise<UpdateAdminProfileUseCaseResponse> {
-		if (requesterId !== adminId) {
+		if (actorId !== targetId) {
 			return left(new NotAllowedError())
 		}
 
-		const isAdmin = await verifyAdminPermission(adminId, this.adminsRepository)
+		const admin = await this.adminsRepository.findById(actorId)
 
-		if (isAdmin.isLeft()) {
-			return left(isAdmin.value)
+		if (!admin) {
+			return left(new ResourceNotFoundError())
 		}
-
-		const { admin } = isAdmin.value
 
 		const userWithSameEmail = await this.usersRepository.findByEmail(user.email)
 
-		if (userWithSameEmail && userWithSameEmail.id.toString() !== requesterId) {
+		if (userWithSameEmail && userWithSameEmail.id.toString() !== actorId) {
 			return left(new UserWithSameEmailError())
 		}
 

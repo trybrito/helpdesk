@@ -3,6 +3,7 @@ import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
@@ -15,10 +16,13 @@ import { UserWithSameEmailError } from '../../../errors/user-with-same-email-err
 import { CreateTechnicianUseCase } from './create-technician'
 
 let admin: Admin
+
 let inMemoryAdminsRepository: InMemoryAdminsRepository
 let inMemoryTechniciansRepository: InMemoryTechniciansRepository
 let inMemoryCustomersRepository: InMemoryCustomersRepository
+
 let inMemoryUsersRepository: InMemoryUsersRepository
+
 let sut: CreateTechnicianUseCase
 
 describe('Create Technician', () => {
@@ -30,6 +34,7 @@ describe('Create Technician', () => {
 
 		inMemoryTechniciansRepository = new InMemoryTechniciansRepository()
 		inMemoryCustomersRepository = new InMemoryCustomersRepository()
+
 		inMemoryUsersRepository = new InMemoryUsersRepository(
 			inMemoryAdminsRepository,
 			inMemoryTechniciansRepository,
@@ -37,7 +42,6 @@ describe('Create Technician', () => {
 		)
 
 		sut = new CreateTechnicianUseCase(
-			inMemoryAdminsRepository,
 			inMemoryUsersRepository,
 			inMemoryTechniciansRepository,
 		)
@@ -45,7 +49,7 @@ describe('Create Technician', () => {
 
 	it('should allow an admin to create a technician', async () => {
 		const resultOrError = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -68,7 +72,7 @@ describe('Create Technician', () => {
 		const technician = await makeTechnician()
 
 		const result = await sut.execute({
-			requesterId: technician.id.toString(),
+			actorRole: technician.user.role,
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -86,7 +90,7 @@ describe('Create Technician', () => {
 		const customer = await makeCustomer()
 
 		const result = await sut.execute({
-			requesterId: customer.id.toString(),
+			actorRole: customer.user.role,
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -102,7 +106,7 @@ describe('Create Technician', () => {
 
 	it('should not be able to create a technician when using an invalid e-mail', async () => {
 		const result = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {
@@ -117,7 +121,53 @@ describe('Create Technician', () => {
 		expect(inMemoryTechniciansRepository.items).toHaveLength(0)
 	})
 
-	it('should not be able to create a technician when using an existing e-mail', async () => {
+	it('should not be able to create a technician when using an existing admin e-mail', async () => {
+		const admin = await makeAdmin({
+			user: { email: unwrapOrThrow(Email.create('johndoe@mail.com')) },
+		})
+
+		inMemoryAdminsRepository.items.push(admin)
+
+		const result = await sut.execute({
+			actorRole: admin.user.role,
+			firstName: 'John',
+			lastName: 'Doe',
+			user: {
+				email: 'johndoe@mail.com',
+				password: '123456',
+			},
+			scheduleAvailability: [''],
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
+		expect(inMemoryTechniciansRepository.items).toHaveLength(0)
+	})
+
+	it('should not be able to create a technician when using an existing technician e-mail', async () => {
+		const technician = await makeTechnician({
+			user: { email: unwrapOrThrow(Email.create('johndoe@mail.com')) },
+		})
+
+		inMemoryTechniciansRepository.create(technician)
+
+		const result = await sut.execute({
+			actorRole: admin.user.role,
+			firstName: 'John',
+			lastName: 'Doe',
+			user: {
+				email: 'johndoe@mail.com',
+				password: '123456',
+			},
+			scheduleAvailability: [''],
+		})
+
+		expect(result.isLeft()).toBeTruthy()
+		expect(result.value).toBeInstanceOf(UserWithSameEmailError)
+		expect(inMemoryTechniciansRepository.items).toHaveLength(1) // from the technician we created
+	})
+
+	it('should not be able to create a technician when using an existing customer e-mail', async () => {
 		const customer = await makeCustomer({
 			user: { email: unwrapOrThrow(Email.create('johndoe@mail.com')) },
 		})
@@ -125,7 +175,7 @@ describe('Create Technician', () => {
 		inMemoryCustomersRepository.create(customer)
 
 		const result = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			firstName: 'John',
 			lastName: 'Doe',
 			user: {

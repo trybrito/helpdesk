@@ -13,7 +13,9 @@ export async function makeUser(
 	const user = new User(
 		{
 			email: unwrapOrThrow(Email.create(faker.internet.email())),
-			password: await Password.createFromPlainText(faker.internet.password()),
+			password: unwrapOrThrow(
+				await Password.createFromPlainText(faker.internet.password()),
+			),
 			role: Role.Customer,
 			...overrides,
 		},

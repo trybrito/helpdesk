@@ -1,12 +1,11 @@
+import { Role } from '@api/core/@types/enums'
 import { Either, left, right } from '@api/core/either'
-import { AdminsRepository } from '@api/domain/application/repositories/admins-repository'
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { Technician } from '@api/domain/enterprise/entities/technician'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
-import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface FetchTechniciansUseCaseRequest {
-	requesterId: string
+	actorRole: Role
 	page: number
 }
 
@@ -16,21 +15,13 @@ export type FetchTechniciansUseCaseResponse = Either<
 >
 
 export class FetchTechniciansUseCase {
-	constructor(
-		private adminsRepository: AdminsRepository,
-		private techniciansRepository: TechniciansRepository,
-	) {}
+	constructor(private techniciansRepository: TechniciansRepository) {}
 
 	async execute({
-		requesterId,
+		actorRole,
 		page,
 	}: FetchTechniciansUseCaseRequest): Promise<FetchTechniciansUseCaseResponse> {
-		const isAdmin = await verifyAdminPermission(
-			requesterId,
-			this.adminsRepository,
-		)
-
-		if (isAdmin.isLeft()) {
+		if (actorRole !== Role.Admin) {
 			return left(new NotAllowedError())
 		}
 

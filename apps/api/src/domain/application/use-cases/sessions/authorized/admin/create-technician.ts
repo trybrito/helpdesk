@@ -1,6 +1,5 @@
 import { Either, left, right } from '@api/core/either'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
-import { AdminsRepository } from '@api/domain/application/repositories/admins-repository'
 import { UsersRepository } from '@api/domain/application/repositories/users-repository'
 import { Role } from 'apps/api/src/core/@types/enums'
 import { Technician } from '../../../../../enterprise/entities/technician'
@@ -10,10 +9,9 @@ import { Password } from '../../../../../enterprise/entities/value-objects/passw
 import { TechniciansRepository } from '../../../../repositories/technicians-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
-import { verifyAdminPermission } from '../../../utils/verify-admin-permission'
 
 export interface CreateTechnicianUseCaseRequest {
-	requesterId: string
+	actorRole: Role
 	user: {
 		email: string
 		password: string
@@ -32,24 +30,18 @@ export type CreateTechnicianUseCaseResponse = Either<
 
 export class CreateTechnicianUseCase {
 	constructor(
-		private adminsRepository: AdminsRepository,
 		private usersRepository: UsersRepository,
 		private techniciansRepository: TechniciansRepository,
 	) {}
 
 	async execute({
-		requesterId,
+		actorRole,
 		user: { email, password },
 		firstName,
 		lastName,
 		scheduleAvailability,
 	}: CreateTechnicianUseCaseRequest): Promise<CreateTechnicianUseCaseResponse> {
-		const isAdmin = await verifyAdminPermission(
-			requesterId,
-			this.adminsRepository,
-		)
-
-		if (isAdmin.isLeft()) {
+		if (actorRole !== Role.Admin) {
 			return left(new NotAllowedError())
 		}
 

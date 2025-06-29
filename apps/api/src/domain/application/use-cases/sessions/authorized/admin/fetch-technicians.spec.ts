@@ -1,32 +1,24 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
 import { expect } from 'vitest'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { FetchTechniciansUseCase } from './fetch-technicians'
 
 let admin: Admin
-let inMemoryAdminsRepository: InMemoryAdminsRepository
+
 let inMemoryTechniciansRepository: InMemoryTechniciansRepository
 let sut: FetchTechniciansUseCase
 
 describe('Fetch technicians', () => {
 	beforeEach(async () => {
-		const authContext = await authenticatedAdminSetup('admin-1')
-
-		admin = authContext.admin
-		inMemoryAdminsRepository = authContext.adminsRepository
+		admin = await makeAdmin()
 
 		inMemoryTechniciansRepository = new InMemoryTechniciansRepository()
-
-		sut = new FetchTechniciansUseCase(
-			inMemoryAdminsRepository,
-			inMemoryTechniciansRepository,
-		)
+		sut = new FetchTechniciansUseCase(inMemoryTechniciansRepository)
 	})
 
 	it('should allow an admin to fetch technicians with pagination', async () => {
@@ -39,7 +31,7 @@ describe('Fetch technicians', () => {
 		}
 
 		const resultOrError = await sut.execute({
-			requesterId: admin.id.toString(),
+			actorRole: admin.user.role,
 			page: 1,
 		})
 
@@ -63,7 +55,7 @@ describe('Fetch technicians', () => {
 		const technician = await makeTechnician()
 
 		const result = await sut.execute({
-			requesterId: technician.id.toString(),
+			actorRole: technician.user.role,
 			page: 1,
 		})
 
@@ -75,7 +67,7 @@ describe('Fetch technicians', () => {
 		const customer = await makeCustomer()
 
 		const result = await sut.execute({
-			requesterId: customer.id.toString(),
+			actorRole: customer.user.role,
 			page: 1,
 		})
 

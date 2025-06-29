@@ -1,33 +1,24 @@
-import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
-import { Admin } from '@api/domain/enterprise/entities/admin'
 import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { CreateCategoryUseCase } from './create-category'
 
 let inMemoryCategoriesRepository: InMemoryCategoriesRepository
-let inMemoryAdminsRepository: InMemoryAdminsRepository
 let sut: CreateCategoryUseCase
-
-let admin: Admin
 
 describe('Create category', () => {
 	beforeEach(async () => {
-		admin = await makeAdmin({}, new UniqueEntityId('admin-1'))
-
-		inMemoryAdminsRepository = new InMemoryAdminsRepository([admin])
 		inMemoryCategoriesRepository = new InMemoryCategoriesRepository()
-		sut = new CreateCategoryUseCase(
-			inMemoryAdminsRepository,
-			inMemoryCategoriesRepository,
-		)
+		sut = new CreateCategoryUseCase(inMemoryCategoriesRepository)
 	})
 
 	it('should allow an admin to create a category', async () => {
+		const admin = await makeAdmin()
+
 		const result = await sut.execute({
+			actorRole: admin.user.role,
 			createdBy: admin.id.toString(),
 			name: 'Test',
 		})
@@ -44,6 +35,7 @@ describe('Create category', () => {
 		const technician = await makeTechnician()
 
 		const result = await sut.execute({
+			actorRole: technician.user.role,
 			createdBy: technician.id.toString(),
 			name: 'Test',
 		})
@@ -57,6 +49,7 @@ describe('Create category', () => {
 		const customer = await makeCustomer()
 
 		const result = await sut.execute({
+			actorRole: customer.user.role,
 			createdBy: customer.id.toString(),
 			name: 'Test',
 		})

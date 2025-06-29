@@ -1,10 +1,9 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
-import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeService } from 'apps/api/test/factories/make-service'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
@@ -12,23 +11,16 @@ import { ServiceAlreadyDeletedError } from '../../../errors/service-already-dele
 import { SoftDeleteServiceUseCase } from './soft-delete-service'
 
 let admin: Admin
-let inMemoryAdminsRepository: InMemoryAdminsRepository
 
 let inMemoryServicesRepository: InMemoryServicesRepository
 let sut: SoftDeleteServiceUseCase
 
 describe('Soft delete service', () => {
 	beforeEach(async () => {
-		const authContext = await authenticatedAdminSetup('admin-1')
-
-		admin = authContext.admin
-		inMemoryAdminsRepository = authContext.adminsRepository
+		admin = await makeAdmin()
 
 		inMemoryServicesRepository = new InMemoryServicesRepository()
-		sut = new SoftDeleteServiceUseCase(
-			inMemoryAdminsRepository,
-			inMemoryServicesRepository,
-		)
+		sut = new SoftDeleteServiceUseCase(inMemoryServicesRepository)
 	})
 
 	it('should allow an admin to soft delete a service', async () => {
@@ -37,7 +29,7 @@ describe('Soft delete service', () => {
 		inMemoryServicesRepository.create(service)
 
 		const resultOrError = await sut.execute({
-			adminId: admin.id.toString(),
+			actorRole: admin.user.role,
 			serviceId: service.id.toString(),
 		})
 
@@ -56,7 +48,7 @@ describe('Soft delete service', () => {
 		inMemoryServicesRepository.create(service)
 
 		const result = await sut.execute({
-			adminId: technician.id.toString(),
+			actorRole: technician.user.role,
 			serviceId: service.id.toString(),
 		})
 
@@ -72,7 +64,7 @@ describe('Soft delete service', () => {
 		inMemoryServicesRepository.create(service)
 
 		const result = await sut.execute({
-			adminId: customer.id.toString(),
+			actorRole: customer.user.role,
 			serviceId: service.id.toString(),
 		})
 
@@ -83,7 +75,7 @@ describe('Soft delete service', () => {
 
 	it('should not be able to soft delete a non-existent service', async () => {
 		const result = await sut.execute({
-			adminId: admin.id.toString(),
+			actorRole: admin.user.role,
 			serviceId: 'non-existent',
 		})
 
@@ -98,12 +90,12 @@ describe('Soft delete service', () => {
 		inMemoryServicesRepository.create(service)
 
 		await sut.execute({
-			adminId: admin.id.toString(),
+			actorRole: admin.user.role,
 			serviceId: service.id.toString(),
 		})
 
 		const result = await sut.execute({
-			adminId: admin.id.toString(),
+			actorRole: admin.user.role,
 			serviceId: service.id.toString(),
 		})
 
