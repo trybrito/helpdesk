@@ -52,13 +52,18 @@ export class UpdateAdminProfileUseCase {
 			return left(new UserWithSameEmailError())
 		}
 
-		const result = await admin.updateProfile({ user, firstName, lastName })
+		const resultOrError = await admin.updateProfile({
+			user,
+			firstName,
+			lastName,
+		})
 
-		if (result.isLeft()) {
-			return left(result.value)
+		if (resultOrError.isLeft()) {
+			return left(resultOrError.value)
 		}
 
-		const { newAdmin } = result.value
+		const result = resultOrError.value
+		const { newAdmin } = result
 
 		await this.adminsRepository.update(newAdmin)
 

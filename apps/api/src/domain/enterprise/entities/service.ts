@@ -1,5 +1,8 @@
+import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
+import { UpdateServiceUseCaseRequest } from '@api/domain/application/use-cases/sessions/authorized/admin/update-service'
 import { Money } from './value-objects/money'
 
 export interface ServiceProps {
@@ -10,6 +13,16 @@ export interface ServiceProps {
 	updatedAt?: Date | null
 	deletedAt?: Date | null
 }
+
+type UpdateServiceRequest = Omit<
+	UpdateServiceUseCaseRequest,
+	'actorRole' | 'targetId'
+> // Coupling!!!
+
+type UpdateServiceResponse = Either<
+	InvalidInputDataError,
+	{ updatedService: Service }
+>
 
 export class Service extends Entity<ServiceProps> {
 	get createdBy() {
@@ -59,5 +72,27 @@ export class Service extends Entity<ServiceProps> {
 		const name = new Service(props, id)
 
 		return name
+	}
+
+	async update({
+		categoryId,
+		name,
+		price,
+	}: UpdateServiceRequest): Promise<UpdateServiceResponse> {
+		const priceOrError = Money.create(price, true)
+
+		if (priceOrError.isLeft()) {
+			return left(priceOrError.value)
+		}
+
+		const priceInCents = priceOrError.value
+
+		this.props.categoryId = new UniqueEntityId(categoryId)
+		this.props.name = name
+		this.props.price = priceInCents
+
+		this.touch()
+
+		return right({ updatedService: this })
 	}
 }

@@ -18,7 +18,7 @@ export interface AdminProps {
 type UpdateProfileRequest = Pick<
 	UpdateAdminProfileUseCaseRequest,
 	'user' | 'firstName' | 'lastName'
->
+> // Coupling!!!
 
 type UpdateProfileResponse = Either<
 	InvalidInputDataError | PasswordTooShortError,
