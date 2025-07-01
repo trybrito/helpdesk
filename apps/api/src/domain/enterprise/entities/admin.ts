@@ -61,7 +61,7 @@ export class Admin extends Entity<AdminProps> {
 	}
 
 	async updateProfile({
-		user: { email, password },
+		user: { email, password, profileImageUrl },
 		firstName,
 		lastName,
 	}: UpdateProfileRequest): Promise<UpdateProfileResponse> {
@@ -82,6 +82,7 @@ export class Admin extends Entity<AdminProps> {
 
 		this.props.user.email = validatedNewEmail
 		this.props.user.password = newPassword
+		this.props.user.profileImageUrl = profileImageUrl ?? null
 		this.props.firstName = firstName
 		this.props.lastName = lastName
 

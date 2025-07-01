@@ -22,6 +22,7 @@ type UpdateProfileRequest = {
 	user: {
 		email: string
 		password: string
+		profileImageUrl?: string | null
 	}
 	firstName: string
 	lastName: string
@@ -86,7 +87,7 @@ export class Technician extends Entity<TechnicianProps> {
 	}
 
 	async updateProfile({
-		user: { email, password },
+		user: { email, password, profileImageUrl },
 		firstName,
 		lastName,
 		scheduleAvailability,
@@ -108,6 +109,7 @@ export class Technician extends Entity<TechnicianProps> {
 
 		this.props.user.email = validatedEmail
 		this.props.user.password = validatedPassword
+		this.props.user.profileImageUrl = profileImageUrl ?? null
 		this.props.firstName = firstName
 		this.props.lastName = lastName
 		this.props.scheduleAvailability = scheduleAvailability

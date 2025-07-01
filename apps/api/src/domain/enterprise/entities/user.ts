@@ -32,7 +32,7 @@ export class User extends Entity<UserProps> {
 		return this.props.profileImageUrl ?? ''
 	}
 
-	set profileImageUrl(imageUrl: string) {
+	set profileImageUrl(imageUrl: string | null) {
 		this.props.profileImageUrl = imageUrl
 	}
 
