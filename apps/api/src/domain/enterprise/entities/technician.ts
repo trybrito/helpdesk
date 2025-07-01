@@ -1,6 +1,11 @@
+import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { User } from './user'
+import { Email } from './value-objects/email'
+import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
+import { Password } from './value-objects/password'
 
 export interface TechnicianProps {
 	lastUpdateLogId?: UniqueEntityId | null
@@ -9,8 +14,24 @@ export interface TechnicianProps {
 	lastName: string
 	mustUpdatePassword: boolean
 	scheduleAvailability: string[]
+	updatedAt?: Date | null
 	deletedAt?: Date | null
 }
+
+type UpdateRequest = {
+	user: {
+		email: string
+		password: string
+	}
+	firstName: string
+	lastName: string
+	scheduleAvailability: string[]
+}
+
+type UpdateResponse = Either<
+	InvalidInputDataError | PasswordTooShortError,
+	{ newTechnician: Technician }
+>
 
 export class Technician extends Entity<TechnicianProps> {
 	get firstName() {
@@ -41,16 +62,8 @@ export class Technician extends Entity<TechnicianProps> {
 		return this.props.deletedAt
 	}
 
-	set firstName(name: string) {
-		this.props.firstName = name
-	}
-
-	set lastName(name: string) {
-		this.props.lastName = name
-	}
-
-	set scheduleAvailability(availability: string[]) {
-		this.props.scheduleAvailability = availability
+	get updatedAt() {
+		return this.props.updatedAt
 	}
 
 	static create(props: TechnicianProps, id?: UniqueEntityId) {
@@ -59,7 +72,48 @@ export class Technician extends Entity<TechnicianProps> {
 		return technician
 	}
 
+	setMustUpdatePasswordToFalse() {
+		this.props.mustUpdatePassword = false
+	}
+
+	touch() {
+		this.props.updatedAt = new Date()
+	}
+
 	softDelete() {
 		this.props.deletedAt = new Date()
+		this.touch()
+	}
+
+	async update({
+		user: { email, password },
+		firstName,
+		lastName,
+		scheduleAvailability,
+	}: UpdateRequest): Promise<UpdateResponse> {
+		const emailOrError = Email.create(email)
+
+		if (emailOrError.isLeft()) {
+			return left(emailOrError.value)
+		}
+
+		const validatedEmail = emailOrError.value
+		const passwordOrError = await Password.createFromPlainText(password)
+
+		if (passwordOrError.isLeft()) {
+			return left(passwordOrError.value)
+		}
+
+		const validatedPassword = passwordOrError.value
+
+		this.props.user.email = validatedEmail
+		this.props.user.password = validatedPassword
+		this.props.firstName = firstName
+		this.props.lastName = lastName
+		this.props.scheduleAvailability = scheduleAvailability
+
+		this.touch()
+
+		return right({ newTechnician: this })
 	}
 }

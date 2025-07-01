@@ -1,6 +1,7 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Email } from '@api/domain/enterprise/entities/value-objects/email'
 import { authenticatedAdminSetup } from 'apps/api/test/factories/helpers/authenticated-admin-setup'
+import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryAdminsRepository } from 'apps/api/test/repositories/in-memory-admins-repository'
@@ -77,9 +78,34 @@ describe('Update admin', () => {
 		)
 	})
 
-	it('should not be able to change the admins profile e-mail using other existent e-mail', async () => {
+	it('should not be able to change the admins profile e-mail using a existent admin e-mail', async () => {
+		const email = 'same@mail.com'
+
+		const admin = await makeAdmin({
+			user: { email: unwrapOrThrow(Email.create(email)) },
+		})
+
+		inMemoryAdminsRepository.items[0] = admin
+
+		const resultOrError = await sut.execute({
+			actorId: 'admin-1',
+			targetId: 'admin-1',
+			user: {
+				email,
+				password: '654321',
+			},
+			firstName: 'John',
+			lastName: 'Doe',
+		})
+
+		expect(resultOrError.isLeft()).toBeTruthy()
+	})
+
+	it('should not be able to change the admins profile e-mail using a existent technician e-mail', async () => {
+		const email = 'same@mail.com'
+
 		const technician = await makeTechnician({
-			user: { email: unwrapOrThrow(Email.create('same@email.com')) },
+			user: { email: unwrapOrThrow(Email.create(email)) },
 		})
 
 		inMemoryTechniciansRepository.create(technician)
@@ -88,7 +114,30 @@ describe('Update admin', () => {
 			actorId: 'admin-1',
 			targetId: 'admin-1',
 			user: {
-				email: 'same@email.com',
+				email,
+				password: '654321',
+			},
+			firstName: 'John',
+			lastName: 'Doe',
+		})
+
+		expect(resultOrError.isLeft()).toBeTruthy()
+	})
+
+	it('should not be able to change the admins profile e-mail using a existent customer e-mail', async () => {
+		const email = 'same@mail.com'
+
+		const customer = await makeCustomer({
+			user: { email: unwrapOrThrow(Email.create(email)) },
+		})
+
+		inMemoryCustomersRepository.create(customer)
+
+		const resultOrError = await sut.execute({
+			actorId: 'admin-1',
+			targetId: 'admin-1',
+			user: {
+				email,
 				password: '654321',
 			},
 			firstName: 'John',

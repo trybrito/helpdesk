@@ -67,6 +67,6 @@ export class UpdateAdminProfileUseCase {
 
 		await this.adminsRepository.update(newAdmin)
 
-		return right({ admin })
+		return right({ admin: newAdmin })
 	}
 }
