@@ -2,7 +2,6 @@ import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
-import { UpdateServiceUseCaseRequest } from '@api/domain/application/use-cases/sessions/authorized/admin/update-service'
 import { Money } from './value-objects/money'
 
 export interface ServiceProps {
@@ -14,10 +13,7 @@ export interface ServiceProps {
 	deletedAt?: Date | null
 }
 
-type UpdateServiceRequest = Omit<
-	UpdateServiceUseCaseRequest,
-	'actorRole' | 'targetId'
-> // Coupling!!!
+type UpdateServiceRequest = { categoryId: string; name: string; price: string }
 
 type UpdateServiceResponse = Either<
 	InvalidInputDataError,

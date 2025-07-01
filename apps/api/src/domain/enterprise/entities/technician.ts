@@ -18,7 +18,7 @@ export interface TechnicianProps {
 	deletedAt?: Date | null
 }
 
-type UpdateRequest = {
+type UpdateProfileRequest = {
 	user: {
 		email: string
 		password: string
@@ -28,7 +28,7 @@ type UpdateRequest = {
 	scheduleAvailability: string[]
 }
 
-type UpdateResponse = Either<
+type UpdateProfileResponse = Either<
 	InvalidInputDataError | PasswordTooShortError,
 	{ newTechnician: Technician }
 >
@@ -85,12 +85,12 @@ export class Technician extends Entity<TechnicianProps> {
 		this.touch()
 	}
 
-	async update({
+	async updateProfile({
 		user: { email, password },
 		firstName,
 		lastName,
 		scheduleAvailability,
-	}: UpdateRequest): Promise<UpdateResponse> {
+	}: UpdateProfileRequest): Promise<UpdateProfileResponse> {
 		const emailOrError = Email.create(email)
 
 		if (emailOrError.isLeft()) {

@@ -67,7 +67,7 @@ export class UpdateTechnicianProfileUseCase {
 			technician.setMustUpdatePasswordToFalse()
 		}
 
-		const resultOrError = await technician.update({
+		const resultOrError = await technician.updateProfile({
 			user,
 			firstName,
 			lastName,

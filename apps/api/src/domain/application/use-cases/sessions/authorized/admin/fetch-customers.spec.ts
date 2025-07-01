@@ -2,29 +2,31 @@ import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { Admin } from '@api/domain/enterprise/entities/admin'
 import { makeAdmin } from 'apps/api/test/factories/make-admin'
 import { makeCustomer } from 'apps/api/test/factories/make-customer'
-import { makeService } from 'apps/api/test/factories/make-service'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
-import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
+import { InMemoryCustomersRepository } from 'apps/api/test/repositories/in-memory-customers-repository'
 import { expect } from 'vitest'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
-import { FetchServicesUseCase } from './fetch-services'
+import { FetchCustomersUseCase } from './fetch-customers'
 
 let admin: Admin
-let inMemoryServicesRepository: InMemoryServicesRepository
-let sut: FetchServicesUseCase
 
-describe('Fetch services', () => {
+let inMemoryCustomersRepository: InMemoryCustomersRepository
+let sut: FetchCustomersUseCase
+
+describe('Fetch customers', () => {
 	beforeEach(async () => {
 		admin = await makeAdmin()
 
-		inMemoryServicesRepository = new InMemoryServicesRepository()
-		sut = new FetchServicesUseCase(inMemoryServicesRepository)
+		inMemoryCustomersRepository = new InMemoryCustomersRepository()
+		sut = new FetchCustomersUseCase(inMemoryCustomersRepository)
 	})
 
-	it('should allow an admin to fetch services of page 1', async () => {
+	it('should allow an admin to fetch customers of page 1', async () => {
 		for (let i = 0; i <= 21; i++) {
-			inMemoryServicesRepository.create(
-				await makeService(admin.id, { service: { name: 'test-service' } }),
+			inMemoryCustomersRepository.create(
+				await makeCustomer({
+					customer: { firstName: 'John', lastName: 'Doe' },
+				}),
 			)
 		}
 
@@ -37,21 +39,24 @@ describe('Fetch services', () => {
 
 		const result = unwrapOrThrow(resultOrError)
 
-		expect(result.services).toHaveLength(20)
-		expect(result.services).toEqual(
+		expect(result.customers).toHaveLength(20)
+		expect(result.customers).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					name: 'test-service',
+					firstName: 'John',
+					lastName: 'Doe',
 				}),
 			]),
 		)
-		expect(inMemoryServicesRepository.items).toHaveLength(22)
+		expect(inMemoryCustomersRepository.items).toHaveLength(22)
 	})
 
-	it('should allow an admin to fetch services of page 2', async () => {
+	it('should allow an admin to fetch customers of page 2', async () => {
 		for (let i = 0; i <= 21; i++) {
-			inMemoryServicesRepository.create(
-				await makeService(admin.id, { service: { name: 'test-service' } }),
+			inMemoryCustomersRepository.create(
+				await makeCustomer({
+					customer: { firstName: 'John', lastName: 'Doe' },
+				}),
 			)
 		}
 
@@ -64,18 +69,19 @@ describe('Fetch services', () => {
 
 		const result = unwrapOrThrow(resultOrError)
 
-		expect(result.services).toHaveLength(2)
-		expect(result.services).toEqual(
+		expect(result.customers).toHaveLength(2)
+		expect(result.customers).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					name: 'test-service',
+					firstName: 'John',
+					lastName: 'Doe',
 				}),
 			]),
 		)
-		expect(inMemoryServicesRepository.items).toHaveLength(22)
+		expect(inMemoryCustomersRepository.items).toHaveLength(22)
 	})
 
-	it('should not allow a technician to fetch services', async () => {
+	it('should not allow a technician to fetch customers', async () => {
 		const technician = await makeTechnician()
 
 		const result = await sut.execute({
@@ -87,7 +93,7 @@ describe('Fetch services', () => {
 		expect(result.value).toBeInstanceOf(NotAllowedError)
 	})
 
-	it('should not allow a customer to fetch services', async () => {
+	it('should not allow a customer to fetch customers', async () => {
 		const customer = await makeCustomer()
 
 		const result = await sut.execute({

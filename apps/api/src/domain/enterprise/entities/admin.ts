@@ -2,7 +2,6 @@ import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
-import { UpdateAdminProfileUseCaseRequest } from '@api/domain/application/use-cases/sessions/authorized/admin/update-admin-profile'
 import { User } from './user'
 import { Email } from './value-objects/email'
 import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
@@ -15,10 +14,15 @@ export interface AdminProps {
 	lastName: string
 }
 
-type UpdateProfileRequest = Pick<
-	UpdateAdminProfileUseCaseRequest,
-	'user' | 'firstName' | 'lastName'
-> // Coupling!!!
+type UpdateProfileRequest = {
+	user: {
+		email: string
+		password: string
+		profileImageUrl?: string | null
+	}
+	firstName: string
+	lastName: string
+}
 
 type UpdateProfileResponse = Either<
 	InvalidInputDataError | PasswordTooShortError,
