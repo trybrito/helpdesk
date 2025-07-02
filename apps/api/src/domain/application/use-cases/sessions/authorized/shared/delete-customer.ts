@@ -5,6 +5,7 @@ import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 
 export interface DeleteCustomerUseCaseRequest {
+	actorId: string
 	actorRole: Role
 	targetId: string
 }
@@ -18,10 +19,15 @@ export class DeleteCustomerUseCase {
 	constructor(private customersRepository: CustomersRepository) {}
 
 	async execute({
+		actorId,
 		actorRole,
 		targetId,
 	}: DeleteCustomerUseCaseRequest): Promise<DeleteCustomerUseCaseResponse> {
-		if (actorRole !== Role.Admin) {
+		if (actorRole !== Role.Admin && actorRole !== Role.Customer) {
+			return left(new NotAllowedError())
+		}
+
+		if (actorRole === Role.Customer && actorId !== targetId) {
 			return left(new NotAllowedError())
 		}
 

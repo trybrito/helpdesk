@@ -26,7 +26,22 @@ describe('Delete customer', () => {
 		inMemoryCustomersRepository.create(customer)
 
 		const result = await sut.execute({
+			actorId: admin.id.toString(),
 			actorRole: admin.user.role,
+			targetId: customer.id.toString(),
+		})
+
+		expect(result.isRight()).toBeTruthy()
+		expect(inMemoryCustomersRepository.items).toHaveLength(0)
+	})
+
+	it('should allow a customer to delete its own profile', async () => {
+		const customer = await makeCustomer()
+		inMemoryCustomersRepository.create(customer)
+
+		const result = await sut.execute({
+			actorId: customer.id.toString(),
+			actorRole: customer.user.role,
 			targetId: customer.id.toString(),
 		})
 
@@ -41,21 +56,8 @@ describe('Delete customer', () => {
 		inMemoryCustomersRepository.create(customer)
 
 		const result = await sut.execute({
+			actorId: technician.id.toString(),
 			actorRole: technician.user.role,
-			targetId: customer.id.toString(),
-		})
-
-		expect(result.isLeft()).toBeTruthy()
-		expect(inMemoryCustomersRepository.items).toHaveLength(1)
-		expect(result.value).toBeInstanceOf(NotAllowedError)
-	})
-
-	it('should not allow a customer to delete other customers profile', async () => {
-		const customer = await makeCustomer()
-		inMemoryCustomersRepository.create(customer)
-
-		const result = await sut.execute({
-			actorRole: customer.user.role,
 			targetId: customer.id.toString(),
 		})
 
@@ -71,6 +73,7 @@ describe('Delete customer', () => {
 		inMemoryCustomersRepository.create(customerToBeDeleted)
 
 		const result = await sut.execute({
+			actorId: customer.id.toString(),
 			actorRole: customer.user.role,
 			targetId: customerToBeDeleted.id.toString(),
 		})
@@ -82,6 +85,7 @@ describe('Delete customer', () => {
 
 	it('should not be able to delete a non-existent customer', async () => {
 		const result = await sut.execute({
+			actorId: admin.id.toString(),
 			actorRole: admin.user.role,
 			targetId: 'non-existent',
 		})
