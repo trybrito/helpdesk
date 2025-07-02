@@ -9,6 +9,19 @@ export class InMemoryCustomersRepository implements CustomersRepository {
 		this.items.push(customer)
 	}
 
+	async update(customer: Customer): Promise<void> {
+		const index = this.items.findIndex((item) => item.id === customer.id)
+
+		this.items.splice(index, 1, customer)
+	}
+
+	async findById(id: string): Promise<Customer | null> {
+		const customer =
+			this.items.find((item) => item.id.toString() === id) ?? null
+
+		return customer
+	}
+
 	async findByEmail(email: string): Promise<Customer | null> {
 		const customer =
 			this.items.find((item) => item.user.email.getValue() === email) ?? null

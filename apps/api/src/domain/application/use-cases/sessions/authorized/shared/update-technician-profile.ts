@@ -14,6 +14,7 @@ export interface UpdateTechnicianProfileUseCaseRequest {
 	user: {
 		email: string
 		password: string
+		profileImageUrl?: string | null
 	}
 	firstName: string
 	lastName: string
@@ -27,8 +28,8 @@ export type UpdateTechnicianProfileUseCaseResponse = Either<
 
 export class UpdateTechnicianProfileUseCase {
 	constructor(
-		private techniciansRepository: TechniciansRepository,
 		private usersRepository: UsersRepository,
+		private techniciansRepository: TechniciansRepository,
 	) {}
 
 	async execute({

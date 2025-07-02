@@ -1,6 +1,11 @@
+import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { User } from './user'
+import { Email } from './value-objects/email'
+import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
+import { Password } from './value-objects/password'
 
 export type CustomerProps = {
 	user: User
@@ -8,6 +13,21 @@ export type CustomerProps = {
 	firstName: string
 	lastName: string
 }
+
+type UpdateProfileRequest = {
+	user: {
+		email: string
+		password: string
+		profileImageUrl?: string | null
+	}
+	firstName: string
+	lastName: string
+}
+
+type UpdateProfileResponse = Either<
+	InvalidInputDataError | PasswordTooShortError,
+	{ newCustomer: Customer }
+>
 
 export class Customer extends Entity<CustomerProps> {
 	get user() {
@@ -38,5 +58,34 @@ export class Customer extends Entity<CustomerProps> {
 		const customer = new Customer(props, id)
 
 		return customer
+	}
+
+	async updateProfile({
+		user: { email, password, profileImageUrl },
+		firstName,
+		lastName,
+	}: UpdateProfileRequest): Promise<UpdateProfileResponse> {
+		const emailOrError = Email.create(email)
+
+		if (emailOrError.isLeft()) {
+			return left(emailOrError.value)
+		}
+
+		const validatedEmail = emailOrError.value
+		const passwordOrError = await Password.createFromPlainText(password)
+
+		if (passwordOrError.isLeft()) {
+			return left(passwordOrError.value)
+		}
+
+		const validatedPassword = passwordOrError.value
+
+		this.props.user.email = validatedEmail
+		this.props.user.password = validatedPassword
+		this.props.user.profileImageUrl = profileImageUrl ?? null
+		this.firstName = firstName
+		this.lastName = lastName
+
+		return right({ newCustomer: this })
 	}
 }
