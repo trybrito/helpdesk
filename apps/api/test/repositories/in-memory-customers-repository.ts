@@ -15,6 +15,12 @@ export class InMemoryCustomersRepository implements CustomersRepository {
 		this.items.splice(index, 1, customer)
 	}
 
+	async delete(customer: Customer): Promise<void> {
+		const index = this.items.findIndex((item) => item.id === customer.id)
+
+		this.items.splice(index, 1)
+	}
+
 	async findById(id: string): Promise<Customer | null> {
 		const customer =
 			this.items.find((item) => item.id.toString() === id) ?? null

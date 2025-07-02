@@ -6,7 +6,7 @@ import { Money } from './value-objects/money'
 
 export interface ServiceProps {
 	createdBy: UniqueEntityId
-	categoryId: UniqueEntityId // verify
+	categoryId: UniqueEntityId
 	name: string
 	price: Money
 	updatedAt?: Date | null
