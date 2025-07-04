@@ -3,6 +3,7 @@ import { Either, left, right } from '@api/core/either'
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { UsersRepository } from '@api/domain/application/repositories/users-repository'
 import { Technician } from '@api/domain/enterprise/entities/technician'
+import { WorkScheduleRequest } from '../../../@types/work-schedule-request'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
@@ -18,7 +19,7 @@ export interface UpdateTechnicianProfileUseCaseRequest {
 	}
 	firstName: string
 	lastName: string
-	scheduleAvailability: string[]
+	availability: WorkScheduleRequest[]
 }
 
 export type UpdateTechnicianProfileUseCaseResponse = Either<
@@ -39,7 +40,7 @@ export class UpdateTechnicianProfileUseCase {
 		user,
 		firstName,
 		lastName,
-		scheduleAvailability,
+		availability,
 	}: UpdateTechnicianProfileUseCaseRequest): Promise<UpdateTechnicianProfileUseCaseResponse> {
 		if (actorRole !== Role.Admin && actorRole !== Role.Technician) {
 			return left(new NotAllowedError())
@@ -72,7 +73,7 @@ export class UpdateTechnicianProfileUseCase {
 			user,
 			firstName,
 			lastName,
-			scheduleAvailability,
+			availability,
 		})
 
 		if (resultOrError.isLeft()) {

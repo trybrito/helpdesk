@@ -5,12 +5,15 @@ import {
 	TechnicianProps,
 } from '@api/domain/enterprise/entities/technician'
 import { UserProps } from '@api/domain/enterprise/entities/user'
+import { WorkScheduleProps } from '@api/domain/enterprise/entities/work-schedule'
 import { faker } from '@faker-js/faker'
 import { makeUser } from './make-user'
+import { makeWorkSchedule } from './make-work-schedule'
 
 export async function makeTechnician(
 	overrides?: {
 		user?: Partial<UserProps>
+		workSchedule?: Partial<WorkScheduleProps>
 		technician?: Partial<TechnicianProps>
 	},
 	id?: UniqueEntityId,
@@ -20,13 +23,15 @@ export async function makeTechnician(
 		role: Role.Technician,
 	})
 
+	const workSchedule = await makeWorkSchedule({ ...overrides?.workSchedule })
+
 	const technician = new Technician(
 		{
 			user,
 			firstName: faker.person.firstName(),
 			lastName: faker.person.lastName(),
 			mustUpdatePassword: true,
-			scheduleAvailability: [''],
+			availability: workSchedule,
 			...overrides?.technician,
 		},
 		id,

@@ -15,9 +15,9 @@ export class Time {
 	}
 
 	static isValid(value: string) {
-		const twentyFourPatternHourMatches = /(?:(?:([01]?\d|2[0-3]):[0-5]?\d))/
+		const twentyFourHourPatternMatches = /(?:(?:([01]?\d|2[0-3]):[0-5]?\d))/
 
-		return twentyFourPatternHourMatches.test(value)
+		return twentyFourHourPatternMatches.test(value)
 	}
 
 	public getValue() {

@@ -61,7 +61,13 @@ describe('Update technician', () => {
 				email: 'doe@mail.com',
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(resultOrError.isRight()).toBeTruthy()
@@ -94,7 +100,13 @@ describe('Update technician', () => {
 				email: 'doe@mail.com',
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(resultOrError.isRight()).toBeTruthy()
@@ -129,7 +141,13 @@ describe('Update technician', () => {
 				email: 'doe@mail.com',
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(result.isLeft()).toBeTruthy()
@@ -153,7 +171,13 @@ describe('Update technician', () => {
 				email: 'doe@mail.com',
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(result.isLeft()).toBeTruthy()
@@ -181,7 +205,13 @@ describe('Update technician', () => {
 				email,
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(result.isLeft()).toBeTruthy()
@@ -209,7 +239,13 @@ describe('Update technician', () => {
 				email,
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(result.isLeft()).toBeTruthy()
@@ -237,7 +273,13 @@ describe('Update technician', () => {
 				email,
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(result.isLeft()).toBeTruthy()
@@ -255,7 +297,13 @@ describe('Update technician', () => {
 				email: 'doe@mail.com',
 				password: '123456',
 			},
-			scheduleAvailability: [''],
+			availability: [
+				{
+					weekday: 'Monday',
+					beforeLunchWorkingHours: { start: '07:00', end: '13:00' },
+					afterLunchWorkingHours: { start: '14:00', end: '16:00' },
+				},
+			],
 		})
 
 		expect(result.isLeft()).toBeTruthy()

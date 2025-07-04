@@ -2,7 +2,12 @@ import { Either, left, right } from '@api/core/either'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { Time } from './time'
 
-type TimeRangeValueObjectReturn = Either<InvalidInputDataError, TimeRange>
+type TimeRangeVOReturn = Either<InvalidInputDataError, TimeRange>
+
+interface TimeRangeVOCreateProps {
+	start: Time
+	end: Time
+}
 
 export class TimeRange {
 	private constructor(
@@ -10,7 +15,7 @@ export class TimeRange {
 		private readonly end: Time,
 	) {}
 
-	static create(start: Time, end: Time): TimeRangeValueObjectReturn {
+	static create({ start, end }: TimeRangeVOCreateProps): TimeRangeVOReturn {
 		if (!TimeRange.isValid(start, end)) {
 			return left(new InvalidInputDataError([start, end]))
 		}
@@ -30,10 +35,10 @@ export class TimeRange {
 	}
 
 	public getStart() {
-		return this.start
+		return this.start.getValue()
 	}
 
 	public getEnd() {
-		return this.end
+		return this.end.getValue()
 	}
 }

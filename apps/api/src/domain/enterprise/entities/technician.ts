@@ -2,10 +2,14 @@ import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
+import { WorkScheduleRequest } from '@api/domain/application/use-cases/@types/work-schedule-request'
+import { buildWorkScheduleOrFail } from '@api/domain/application/use-cases/helpers/build-work-schedule-or-fail'
+import { deconstructWorkScheduleEitherList } from '@api/domain/application/use-cases/helpers/deconstruct-work-schedule-either-list'
 import { User } from './user'
 import { Email } from './value-objects/email'
 import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
 import { Password } from './value-objects/password'
+import { WorkSchedule } from './work-schedule'
 
 export interface TechnicianProps {
 	lastUpdateLogId?: UniqueEntityId | null
@@ -13,7 +17,7 @@ export interface TechnicianProps {
 	firstName: string
 	lastName: string
 	mustUpdatePassword: boolean
-	scheduleAvailability: string[]
+	availability: WorkSchedule[]
 	updatedAt?: Date | null
 	deletedAt?: Date | null
 }
@@ -26,7 +30,7 @@ type UpdateProfileRequest = {
 	}
 	firstName: string
 	lastName: string
-	scheduleAvailability: string[]
+	availability: WorkScheduleRequest[]
 }
 
 type UpdateProfileResponse = Either<
@@ -55,8 +59,8 @@ export class Technician extends Entity<TechnicianProps> {
 		return this.props.mustUpdatePassword
 	}
 
-	get scheduleAvailability() {
-		return this.props.scheduleAvailability
+	get availability() {
+		return this.props.availability
 	}
 
 	get deletedAt() {
@@ -90,7 +94,7 @@ export class Technician extends Entity<TechnicianProps> {
 		user: { email, password, profileImageUrl },
 		firstName,
 		lastName,
-		scheduleAvailability,
+		availability,
 	}: UpdateProfileRequest): Promise<UpdateProfileResponse> {
 		const emailOrError = Email.create(email)
 
@@ -107,12 +111,23 @@ export class Technician extends Entity<TechnicianProps> {
 
 		const validatedPassword = passwordOrError.value
 
+		const workSchedulesEitherList = availability.map(buildWorkScheduleOrFail)
+		const workSchedulesOrError = deconstructWorkScheduleEitherList(
+			workSchedulesEitherList,
+		)
+
+		if (workSchedulesOrError.isLeft()) {
+			return left(workSchedulesOrError.value)
+		}
+
+		const workSchedules = workSchedulesOrError.value
+
 		this.props.user.email = validatedEmail
 		this.props.user.password = validatedPassword
 		this.props.user.profileImageUrl = profileImageUrl ?? null
 		this.props.firstName = firstName
 		this.props.lastName = lastName
-		this.props.scheduleAvailability = scheduleAvailability
+		this.props.availability = workSchedules
 
 		this.touch()
 

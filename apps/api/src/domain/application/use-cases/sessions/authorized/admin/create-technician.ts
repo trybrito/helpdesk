@@ -7,8 +7,11 @@ import { User } from '../../../../../enterprise/entities/user'
 import { Email } from '../../../../../enterprise/entities/value-objects/email'
 import { Password } from '../../../../../enterprise/entities/value-objects/password'
 import { TechniciansRepository } from '../../../../repositories/technicians-repository'
+import { WorkScheduleRequest } from '../../../@types/work-schedule-request'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
+import { buildWorkScheduleOrFail } from '../../../helpers/build-work-schedule-or-fail'
+import { deconstructWorkScheduleEitherList } from '../../../helpers/deconstruct-work-schedule-either-list'
 
 export interface CreateTechnicianUseCaseRequest {
 	actorRole: Role
@@ -18,7 +21,7 @@ export interface CreateTechnicianUseCaseRequest {
 	}
 	firstName: string
 	lastName: string
-	scheduleAvailability: string[]
+	availability: WorkScheduleRequest[]
 }
 
 export type CreateTechnicianUseCaseResponse = Either<
@@ -39,7 +42,7 @@ export class CreateTechnicianUseCase {
 		user: { email, password },
 		firstName,
 		lastName,
-		scheduleAvailability,
+		availability,
 	}: CreateTechnicianUseCaseRequest): Promise<CreateTechnicianUseCaseResponse> {
 		if (actorRole !== Role.Admin) {
 			return left(new NotAllowedError())
@@ -71,6 +74,17 @@ export class CreateTechnicianUseCase {
 
 		const validatedPassword = passwordOrError.value
 
+		const workSchedulesEitherList = availability.map(buildWorkScheduleOrFail)
+		const workSchedulesOrError = deconstructWorkScheduleEitherList(
+			workSchedulesEitherList,
+		)
+
+		if (workSchedulesOrError.isLeft()) {
+			return left(workSchedulesOrError.value)
+		}
+
+		const workSchedules = workSchedulesOrError.value
+
 		const user = new User({
 			email: validatedEmail,
 			password: validatedPassword,
@@ -82,7 +96,7 @@ export class CreateTechnicianUseCase {
 			lastName,
 			user,
 			mustUpdatePassword: MUST_UPDATE_PASSWORD,
-			scheduleAvailability,
+			availability: workSchedules,
 		})
 
 		await this.techniciansRepository.create(technician)
