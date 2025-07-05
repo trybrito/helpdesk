@@ -6,5 +6,5 @@ export abstract class TechniciansRepository {
 	abstract update(technician: Technician): Promise<void>
 	abstract findById(id: string): Promise<Technician | null>
 	abstract findByEmail(email: string): Promise<Technician | null>
-	abstract findMany(params: PaginationParams): Promise<Technician[]>
+	abstract findMany(params?: PaginationParams): Promise<Technician[]>
 }

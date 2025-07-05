@@ -29,8 +29,17 @@ export class InMemoryTechniciansRepository implements TechniciansRepository {
 		return technician
 	}
 
-	async findMany({ page }: PaginationParams): Promise<Technician[]> {
-		const technicians = this.items.slice(page - 1, page * 20)
+	async findMany(params?: PaginationParams): Promise<Technician[]> {
+		if (params?.page) {
+			const techniciansWithPagination = this.items.slice(
+				(params.page - 1) * 20,
+				params.page * 20,
+			)
+
+			return techniciansWithPagination
+		}
+
+		const technicians = this.items
 
 		return technicians
 	}

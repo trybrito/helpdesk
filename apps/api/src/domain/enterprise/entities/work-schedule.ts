@@ -14,11 +14,11 @@ export class WorkSchedule extends Entity<WorkScheduleProps> {
 		return this.props.weekday
 	}
 
-	get beforeLunchWorkingHours() {
+	get beforeLunchWorkingHours(): TimeRange {
 		return this.beforeLunchWorkingHours
 	}
 
-	get afterLunchWorkingHours() {
+	get afterLunchWorkingHours(): TimeRange {
 		return this.afterLunchWorkingHours
 	}
 

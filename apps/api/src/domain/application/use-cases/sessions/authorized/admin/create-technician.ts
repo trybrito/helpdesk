@@ -11,7 +11,7 @@ import { WorkScheduleRequest } from '../../../@types/work-schedule-request'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { UserWithSameEmailError } from '../../../errors/user-with-same-email-error'
 import { buildWorkScheduleOrFail } from '../../../helpers/build-work-schedule-or-fail'
-import { deconstructWorkScheduleEitherList } from '../../../helpers/deconstruct-work-schedule-either-list'
+import { deconstructEitherList } from '../../../helpers/deconstruct-either-list'
 
 export interface CreateTechnicianUseCaseRequest {
 	actorRole: Role
@@ -75,9 +75,7 @@ export class CreateTechnicianUseCase {
 		const validatedPassword = passwordOrError.value
 
 		const workSchedulesEitherList = availability.map(buildWorkScheduleOrFail)
-		const workSchedulesOrError = deconstructWorkScheduleEitherList(
-			workSchedulesEitherList,
-		)
+		const workSchedulesOrError = deconstructEitherList(workSchedulesEitherList)
 
 		if (workSchedulesOrError.isLeft()) {
 			return left(workSchedulesOrError.value)

@@ -4,7 +4,7 @@ import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { WorkScheduleRequest } from '@api/domain/application/use-cases/@types/work-schedule-request'
 import { buildWorkScheduleOrFail } from '@api/domain/application/use-cases/helpers/build-work-schedule-or-fail'
-import { deconstructWorkScheduleEitherList } from '@api/domain/application/use-cases/helpers/deconstruct-work-schedule-either-list'
+import { deconstructEitherList } from '@api/domain/application/use-cases/helpers/deconstruct-either-list'
 import { User } from './user'
 import { Email } from './value-objects/email'
 import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
@@ -112,9 +112,7 @@ export class Technician extends Entity<TechnicianProps> {
 		const validatedPassword = passwordOrError.value
 
 		const workSchedulesEitherList = availability.map(buildWorkScheduleOrFail)
-		const workSchedulesOrError = deconstructWorkScheduleEitherList(
-			workSchedulesEitherList,
-		)
+		const workSchedulesOrError = deconstructEitherList(workSchedulesEitherList)
 
 		if (workSchedulesOrError.isLeft()) {
 			return left(workSchedulesOrError.value)

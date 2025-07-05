@@ -5,11 +5,17 @@ import {
 	TicketStatus,
 } from 'apps/api/src/core/@types/enums'
 import { Optional } from 'apps/api/src/core/@types/optional'
+import { Category } from './category'
+import { Observation } from './observation'
+import { Service } from './service'
 
 export interface TicketProps {
-	technicianId: UniqueEntityId
-	costumerId: UniqueEntityId
+	technicianId?: UniqueEntityId | null
+	customerId: UniqueEntityId
 	description: string
+	category: Category
+	services: Service[]
+	observations: Observation[]
 	status: TicketStatus
 	assignmentStatus: TicketAssignmentStatus
 	createdAt: Date
@@ -21,12 +27,20 @@ export class Ticket extends Entity<TicketProps> {
 		return this.props.technicianId
 	}
 
-	get costumerId() {
-		return this.props.costumerId
+	get customerId() {
+		return this.props.customerId
 	}
 
 	get description() {
 		return this.props.description
+	}
+
+	get services() {
+		return this.props.services
+	}
+
+	get observations() {
+		return this.props.observations
 	}
 
 	get status() {
@@ -65,13 +79,14 @@ export class Ticket extends Entity<TicketProps> {
 	}
 
 	static create(
-		props: Optional<TicketProps, 'createdAt'>,
+		props: Optional<TicketProps, 'createdAt' | 'observations'>,
 		id?: UniqueEntityId,
 	) {
 		const ticket = new Ticket(
 			{
 				...props,
 				createdAt: props.createdAt ?? new Date(),
+				observations: props.observations ?? [],
 			},
 			id,
 		)

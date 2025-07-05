@@ -1,6 +1,6 @@
 import { Either, left, right } from '@api/core/either'
 
-export function deconstructWorkScheduleEitherList<L, R>(
+export function deconstructEitherList<L, R>(
 	list: Either<L, R>[],
 ): Either<L, R[]> {
 	const results: R[] = []

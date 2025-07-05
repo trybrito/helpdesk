@@ -4,7 +4,7 @@ import { Time } from '@api/domain/enterprise/entities/value-objects/time'
 import { TimeRange } from '@api/domain/enterprise/entities/value-objects/time-range'
 import { Weekday } from '@api/domain/enterprise/entities/value-objects/weekday'
 import { WorkSchedule } from '@api/domain/enterprise/entities/work-schedule'
-import { WorkScheduleRequest } from '../sessions/authorized/admin/create-technician'
+import { WorkScheduleRequest } from '../@types/work-schedule-request'
 
 export function buildWorkScheduleOrFail(
 	item: WorkScheduleRequest,
