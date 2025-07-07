@@ -10,11 +10,12 @@ import { ServicesRepository } from '@api/domain/application/repositories/service
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { TicketsRepository } from '@api/domain/application/repositories/tickets-repository'
 import { Ticket } from '@api/domain/enterprise/entities/ticket'
-import { Time } from '@api/domain/enterprise/entities/value-objects/time'
 import { ImpossibleToCreateTicketWithThisStatusError } from '../../../errors/impossible-to-create-ticket-with-this-status-error'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { deconstructEitherList } from '../../../helpers/deconstruct-either-list'
+import { getAvailableTechnicians } from '../../../helpers/get-available-technicians'
+import { getRandomAvailableTechnicianId } from '../../../helpers/get-random-available-technician-id'
 import { getServiceByIdOrFail } from '../../../helpers/get-service-or-fail'
 
 export interface CreateTicketUseCaseRequest {
@@ -81,55 +82,30 @@ export class CreateTicketUseCase {
 		const services = servicesOrError.value
 
 		const technicians = await this.techniciansRepository.findMany()
-		const openTickets = await this.ticketsRepository.findManyOpen()
 
-		const techniciansHandlingTicketsAtTime = openTickets.map(
-			(ticket) => ticket.technicianId,
-		)
-
-		const techniciansNotHandlingTickets = technicians.filter(
-			(technician) => !techniciansHandlingTicketsAtTime.includes(technician.id),
-		)
-
-		const now = new Date()
-
-		const localDay = new Intl.DateTimeFormat('en-US', {
-			weekday: 'long',
-		}).format(now)
-
-		const hour = now.getHours().toString().padStart(2, '0')
-		const minute = now.getMinutes().toString().padStart(2, '0')
-
-		const formattedTime = `${hour}:${minute}`
-		const localTimeOrError = Time.create(formattedTime)
-
-		if (localTimeOrError.isLeft()) {
-			return left(localTimeOrError.value)
+		if (!technicians.length) {
+			return left(new ResourceNotFoundError())
 		}
 
-		const localTime = localTimeOrError.value
+		const openTickets = await this.ticketsRepository.findManyOpen()
 
-		const availableTechnicians = techniciansNotHandlingTickets.filter(
-			(technician) => {
-				return technician.availability.find((availability) => {
-					return (
-						availability.weekday.getValue() === localDay &&
-						(availability.beforeLunchWorkingHours.isBetween(localTime) ||
-							availability.afterLunchWorkingHours.isBetween(localTime))
-					)
-				})
-			},
-		)
+		const availableTechniciansEitherResult = getAvailableTechnicians({
+			technicians,
+			openTickets,
+		})
 
-		let assignmentStatus = TicketAssignmentStatus.Assigned
-		let technicianId: UniqueEntityId | null =
-			availableTechnicians[
-				Math.floor(Math.random() * availableTechnicians.length)
-			].id
+		if (availableTechniciansEitherResult.isLeft()) {
+			return left(availableTechniciansEitherResult.value)
+		}
 
-		if (availableTechnicians.length === 0) {
-			assignmentStatus = TicketAssignmentStatus.Pendent
-			technicianId = null
+		const { availableTechnicians } = availableTechniciansEitherResult.value
+
+		let assignmentStatus = TicketAssignmentStatus.Pendent
+		let technicianId: UniqueEntityId | null = null
+
+		if (availableTechnicians.length > 0) {
+			assignmentStatus = TicketAssignmentStatus.Assigned
+			technicianId = getRandomAvailableTechnicianId({ availableTechnicians })
 		}
 
 		const ticket = Ticket.create({
