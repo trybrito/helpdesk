@@ -15,11 +15,11 @@ export class WorkSchedule extends Entity<WorkScheduleProps> {
 	}
 
 	get beforeLunchWorkingHours(): TimeRange {
-		return this.beforeLunchWorkingHours
+		return this.props.beforeLunchWorkingHours
 	}
 
 	get afterLunchWorkingHours(): TimeRange {
-		return this.afterLunchWorkingHours
+		return this.props.afterLunchWorkingHours
 	}
 
 	static create(props: WorkScheduleProps, id?: UniqueEntityId) {

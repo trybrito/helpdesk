@@ -5,12 +5,12 @@ import {
 } from '@api/core/@types/enums'
 import { Either, left, right } from '@api/core/either'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { CategoriesRepository } from '@api/domain/application/repositories/categories-repository'
 import { ServicesRepository } from '@api/domain/application/repositories/services-repository'
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { TicketsRepository } from '@api/domain/application/repositories/tickets-repository'
 import { Ticket } from '@api/domain/enterprise/entities/ticket'
-import { ImpossibleToCreateTicketWithThisStatusError } from '../../../errors/impossible-to-create-ticket-with-this-status-error'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
 import { deconstructEitherList } from '../../../helpers/deconstruct-either-list'
@@ -24,11 +24,10 @@ export interface CreateTicketUseCaseRequest {
 	categoryId: string
 	servicesIds: string[]
 	description: string
-	status: TicketStatus
 }
 
 export type CreateTicketUseCaseResponse = Either<
-	NotAllowedError | ImpossibleToCreateTicketWithThisStatusError,
+	NotAllowedError | ResourceNotFoundError | InvalidInputDataError,
 	{ ticket: Ticket }
 >
 
@@ -46,23 +45,19 @@ export class CreateTicketUseCase {
 		categoryId,
 		servicesIds,
 		description,
-		status,
 	}: CreateTicketUseCaseRequest): Promise<CreateTicketUseCaseResponse> {
 		if (actorRole !== Role.Customer) {
 			return left(new NotAllowedError())
 		}
 
-		if (status !== TicketStatus.Open) {
-			return left(new ImpossibleToCreateTicketWithThisStatusError(status))
-		}
-
+		const STATUS = TicketStatus.Open
 		const category = await this.categoriesRepository.findById(categoryId)
 
 		if (!category) {
 			return left(new ResourceNotFoundError())
 		}
 
-		const servicesList = await Promise.all(
+		const servicesResults = await Promise.all(
 			servicesIds.map(async (id) => {
 				const eitherResult = await getServiceByIdOrFail(
 					id,
@@ -73,21 +68,22 @@ export class CreateTicketUseCase {
 			}),
 		)
 
-		const servicesOrError = deconstructEitherList(servicesList)
+		const servicesEitherResult = deconstructEitherList(servicesResults)
 
-		if (servicesOrError.isLeft()) {
-			return left(servicesOrError.value)
+		if (servicesEitherResult.isLeft()) {
+			return left(servicesEitherResult.value)
 		}
 
-		const services = servicesOrError.value
-
+		const services = servicesEitherResult.value
 		const technicians = await this.techniciansRepository.findMany()
 
 		if (!technicians.length) {
 			return left(new ResourceNotFoundError())
 		}
 
-		const openTickets = await this.ticketsRepository.findManyOpen()
+		const openTickets = await this.ticketsRepository.findManyByStatus(
+			TicketStatus.Open,
+		)
 
 		const availableTechniciansEitherResult = getAvailableTechnicians({
 			technicians,
@@ -115,8 +111,10 @@ export class CreateTicketUseCase {
 			description,
 			technicianId,
 			services,
-			status,
+			status: STATUS,
 		})
+
+		this.ticketsRepository.create(ticket)
 
 		return right({ ticket })
 	}
