@@ -10,7 +10,7 @@ export async function makeUser(
 	overrides: Partial<UserProps> = {},
 	id?: UniqueEntityId,
 ) {
-	const user = new User(
+	const user = User.create(
 		{
 			email: unwrapOrThrow(Email.create(faker.internet.email())),
 			password: unwrapOrThrow(

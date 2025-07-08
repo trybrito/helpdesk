@@ -16,7 +16,7 @@ export async function makeService(
 ) {
 	const category = await makeCategory({ ...overrides?.category })
 
-	const service = new Service(
+	const service = Service.create(
 		{
 			categoryId: category.id,
 			createdBy: creatorId,

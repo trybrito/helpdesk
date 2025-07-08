@@ -10,7 +10,7 @@ export async function makeCategory(
 	overrides: Partial<CategoryProps> = {},
 	id?: UniqueEntityId,
 ) {
-	const category = new Category(
+	const category = Category.create(
 		{
 			createdBy: new UniqueEntityId(randomUUID()),
 			name: faker.lorem.word(),

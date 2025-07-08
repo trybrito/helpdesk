@@ -17,7 +17,7 @@ export async function makeAdmin(
 		role: Role.Admin,
 	})
 
-	const admin = new Admin(
+	const admin = Admin.create(
 		{
 			user,
 			firstName: faker.person.firstName(),

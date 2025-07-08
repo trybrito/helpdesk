@@ -25,7 +25,7 @@ export async function makeTechnician(
 
 	const workSchedule = await makeWorkSchedule({ ...overrides?.workSchedule })
 
-	const technician = new Technician(
+	const technician = Technician.create(
 		{
 			user,
 			firstName: faker.person.firstName(),

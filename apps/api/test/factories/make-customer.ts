@@ -20,7 +20,7 @@ export async function makeCustomer(
 		role: Role.Customer,
 	})
 
-	const customer = new Customer(
+	const customer = Customer.create(
 		{
 			user,
 			firstName: faker.person.firstName(),
