@@ -6,4 +6,8 @@ export abstract class TicketsRepository {
 	abstract create(ticket: Ticket): Promise<void>
 	abstract findManyByStatus(status: TicketStatus): Promise<Ticket[]>
 	abstract findMany(params?: PaginationParams): Promise<Ticket[]>
+	abstract findManyByTechnicianId(
+		id: string,
+		params?: PaginationParams,
+	): Promise<Ticket[]>
 }
