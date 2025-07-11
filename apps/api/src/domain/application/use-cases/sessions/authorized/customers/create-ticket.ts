@@ -106,7 +106,9 @@ export class CreateTicketUseCase {
 
 		if (availableTechnicians.length > 0) {
 			assignmentStatus = TicketAssignmentStatus.Assigned
-			technicianId = getRandomAvailableTechnicianId({ availableTechnicians })
+			technicianId = getRandomAvailableTechnicianId({
+				availableTechnicians,
+			})
 		}
 
 		const ticket = Ticket.create({

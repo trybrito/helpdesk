@@ -1,5 +1,6 @@
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { TicketStatusCannotBeChangedWhenClosedError } from '@api/domain/application/use-cases/errors/ticket-status-cannot-be-changed-when-closed-error.ts'
 import {
 	TicketAssignmentStatus,
 	TicketStatus,
@@ -76,6 +77,19 @@ export class Ticket extends Entity<TicketProps> {
 
 	touch() {
 		this.props.updatedAt = new Date()
+	}
+
+	changeTicketStatus() {
+		switch (this.props.status) {
+			case TicketStatus.Open:
+				this.props.status = TicketStatus.BeingHandled
+				break
+			case TicketStatus.BeingHandled:
+				this.props.status = TicketStatus.Closed
+				break
+			default:
+				throw new TicketStatusCannotBeChangedWhenClosedError()
+		}
 	}
 
 	static create(

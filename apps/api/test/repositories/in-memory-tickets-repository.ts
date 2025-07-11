@@ -10,6 +10,12 @@ export class InMemoryTicketsRepository implements TicketsRepository {
 		this.items.push(ticket)
 	}
 
+	async findById(id: string): Promise<Ticket | null> {
+		const ticket = this.items.find((item) => item.id.toString() === id) ?? null
+
+		return ticket
+	}
+
 	async findMany(params?: PaginationParams): Promise<Ticket[]> {
 		if (params?.page) {
 			const paginatedTickets = this.items.slice(
