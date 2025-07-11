@@ -47,7 +47,9 @@ describe('Create service', () => {
 		expect(inMemoryServicesRepository.items[0]).toEqual(
 			expect.objectContaining({
 				name: 'Test',
-				price: 3990, // in cents
+				price: expect.objectContaining({
+					value: 3990, // in cents
+				}),
 			}),
 		)
 	})

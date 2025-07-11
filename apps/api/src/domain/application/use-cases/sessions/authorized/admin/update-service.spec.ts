@@ -51,7 +51,7 @@ describe('Update service', () => {
 				categoryToUpdate.id,
 			),
 		).toBeTruthy()
-		expect(inMemoryServicesRepository.items[0].price).toBe(4999)
+		expect(inMemoryServicesRepository.items[0].price.getValue()).toBe(4999)
 	})
 
 	it('should not allow a technician to update a service', async () => {
@@ -70,7 +70,7 @@ describe('Update service', () => {
 			targetId: service.id.toString(),
 			categoryId: categoryToUpdate.id.toString(),
 			name: 'other-name',
-			price: '49,99',
+			price: '4999',
 		})
 
 		expect(result.isLeft()).toBeTruthy()
@@ -94,7 +94,7 @@ describe('Update service', () => {
 			targetId: service.id.toString(),
 			categoryId: categoryToUpdate.id.toString(),
 			name: 'other-name',
-			price: '49,99',
+			price: '4999',
 		})
 
 		expect(result.isLeft()).toBeTruthy()

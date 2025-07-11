@@ -21,9 +21,16 @@ export class InMemoryServicesRepository implements ServicesRepository {
 		this.items[serviceIndex] = service
 	}
 
-	async findMany({ page }: PaginationParams): Promise<Service[]> {
-		const services = this.items.slice((page - 1) * 20, page * 20)
+	async findMany(params?: PaginationParams): Promise<Service[]> {
+		if (params?.page) {
+			const paginatedServices = this.items.slice(
+				(params.page - 1) * 20,
+				params.page * 20,
+			)
 
-		return services
+			return paginatedServices
+		}
+
+		return this.items
 	}
 }

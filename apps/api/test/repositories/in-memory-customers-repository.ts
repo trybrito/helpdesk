@@ -35,9 +35,16 @@ export class InMemoryCustomersRepository implements CustomersRepository {
 		return customer
 	}
 
-	async findMany({ page }: PaginationParams): Promise<Customer[]> {
-		const customers = this.items.slice((page - 1) * 20, page * 20)
+	async findMany(params?: PaginationParams): Promise<Customer[]> {
+		if (params?.page) {
+			const paginatedCustomers = this.items.slice(
+				(params.page - 1) * 20,
+				params.page * 20,
+			)
 
-		return customers
+			return paginatedCustomers
+		}
+
+		return this.items
 	}
 }

@@ -31,16 +31,14 @@ export class InMemoryTechniciansRepository implements TechniciansRepository {
 
 	async findMany(params?: PaginationParams): Promise<Technician[]> {
 		if (params?.page) {
-			const techniciansWithPagination = this.items.slice(
+			const paginatedTechnicians = this.items.slice(
 				(params.page - 1) * 20,
 				params.page * 20,
 			)
 
-			return techniciansWithPagination
+			return paginatedTechnicians
 		}
 
-		const technicians = this.items
-
-		return technicians
+		return this.items
 	}
 }

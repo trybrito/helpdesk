@@ -12,17 +12,15 @@ export class InMemoryTicketsRepository implements TicketsRepository {
 
 	async findMany(params?: PaginationParams): Promise<Ticket[]> {
 		if (params?.page) {
-			const ticketsWithPagination = this.items.slice(
+			const paginatedTickets = this.items.slice(
 				(params.page - 1) * 20,
 				params.page * 20,
 			)
 
-			return ticketsWithPagination
+			return paginatedTickets
 		}
 
-		const tickets = this.items
-
-		return tickets
+		return this.items
 	}
 
 	async findManyByStatus(status: TicketStatus): Promise<Ticket[]> {
@@ -36,17 +34,17 @@ export class InMemoryTicketsRepository implements TicketsRepository {
 		params?: PaginationParams,
 	): Promise<Ticket[]> {
 		if (params?.page) {
-			const ticketsWithPagination = this.items
+			const paginatedTicketsByTechnician = this.items
 				.filter((item) => item.technicianId?.toString() === id)
 				.slice((params.page - 1) * 20, params.page * 20)
 
-			return ticketsWithPagination
+			return paginatedTicketsByTechnician
 		}
 
-		const tickets = this.items.filter(
+		const ticketsByTechnician = this.items.filter(
 			(item) => item.technicianId?.toString() === id,
 		)
 
-		return tickets
+		return ticketsByTechnician
 	}
 }

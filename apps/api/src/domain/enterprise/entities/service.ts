@@ -34,7 +34,7 @@ export class Service extends Entity<ServiceProps> {
 	}
 
 	get price() {
-		return this.props.price.getValue()
+		return this.props.price
 	}
 
 	get updatedAt() {

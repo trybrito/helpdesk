@@ -1,4 +1,5 @@
 import {
+	BillingStatus,
 	Role,
 	TicketAssignmentStatus,
 	TicketStatus,
@@ -6,10 +7,13 @@ import {
 import { Either, left, right } from '@api/core/either'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
+import { BillingsRepository } from '@api/domain/application/repositories/billings-repository'
 import { CategoriesRepository } from '@api/domain/application/repositories/categories-repository'
 import { ServicesRepository } from '@api/domain/application/repositories/services-repository'
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { TicketsRepository } from '@api/domain/application/repositories/tickets-repository'
+import { Billing } from '@api/domain/enterprise/entities/billing'
+import { BillingItem } from '@api/domain/enterprise/entities/billing-item'
 import { Ticket } from '@api/domain/enterprise/entities/ticket'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
@@ -37,6 +41,7 @@ export class CreateTicketUseCase {
 		private techniciansRepository: TechniciansRepository,
 		private categoriesRepository: CategoriesRepository,
 		private servicesRepository: ServicesRepository,
+		private billingsRepository: BillingsRepository,
 	) {}
 
 	async execute({
@@ -115,6 +120,23 @@ export class CreateTicketUseCase {
 		})
 
 		this.ticketsRepository.create(ticket)
+
+		const billingItems = services.map((service) => {
+			const billingItem = BillingItem.create({
+				serviceId: service.id,
+				price: service.price,
+			})
+
+			return billingItem
+		})
+
+		const billing = Billing.create({
+			ticketId: ticket.id,
+			status: BillingStatus.Open,
+			items: billingItems,
+		})
+
+		this.billingsRepository.create(billing)
 
 		return right({ ticket })
 	}

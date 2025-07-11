@@ -1,5 +1,6 @@
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
+import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
 import { BillingStatus } from 'apps/api/src/core/@types/enums'
 import { Optional } from 'apps/api/src/core/@types/optional'
 import { BillingItem } from './billing-item'
@@ -7,15 +8,21 @@ import { Money } from './value-objects/money'
 
 export interface BillingProps {
 	ticketId: UniqueEntityId
+	items: BillingItem[]
 	status: BillingStatus
-	totalPrice: Money
 	createdAt: Date
 	updatedAt?: Date | null
 }
 
 export class Billing extends Entity<BillingProps> {
+	private _totalPrice: Money = unwrapOrThrow(Money.create('0'))
+
 	get ticketId() {
 		return this.props.ticketId
+	}
+
+	get item() {
+		return this.props.items
 	}
 
 	get status() {
@@ -23,7 +30,7 @@ export class Billing extends Entity<BillingProps> {
 	}
 
 	get totalPrice() {
-		return this.props.totalPrice.getValue()
+		return this._totalPrice
 	}
 
 	get createdAt() {
@@ -50,6 +57,8 @@ export class Billing extends Entity<BillingProps> {
 			id,
 		)
 
+		billing.assignTotalPrice()
+
 		return billing
 	}
 
@@ -63,9 +72,9 @@ export class Billing extends Entity<BillingProps> {
 		this.touch()
 	}
 
-	recalculateTotal(items: BillingItem[]) {
-		const prices = items.map((item) => Number(item.price))
+	protected assignTotalPrice() {
+		const prices = this.props.items.map((item) => Number(item.price))
 
-		this.props.totalPrice = Money.calculateTotal(prices)
+		this._totalPrice = Money.calculateTotal(prices)
 	}
 }

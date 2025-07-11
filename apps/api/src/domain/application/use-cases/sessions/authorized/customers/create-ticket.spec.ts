@@ -11,6 +11,7 @@ import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeService } from 'apps/api/test/factories/make-service'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { makeWorkSchedule } from 'apps/api/test/factories/make-work-schedule'
+import { InMemoryBillingsRepository } from 'apps/api/test/repositories/in-memory-billings-repository'
 import { InMemoryCategoriesRepository } from 'apps/api/test/repositories/in-memory-categories-repository'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
 import { InMemoryTechniciansRepository } from 'apps/api/test/repositories/in-memory-technicians-repository'
@@ -26,6 +27,7 @@ let inMemoryTicketsRepository: InMemoryTicketsRepository
 let inMemoryTechniciansRepository: InMemoryTechniciansRepository
 let inMemoryCategoriesRepository: InMemoryCategoriesRepository
 let inMemoryServicesRepository: InMemoryServicesRepository
+let inMemoryBillingsRepository: InMemoryBillingsRepository
 let sut: CreateTicketUseCase
 
 describe('Create ticket', () => {
@@ -37,12 +39,14 @@ describe('Create ticket', () => {
 		inMemoryTechniciansRepository = new InMemoryTechniciansRepository()
 		inMemoryCategoriesRepository = new InMemoryCategoriesRepository()
 		inMemoryServicesRepository = new InMemoryServicesRepository()
+		inMemoryBillingsRepository = new InMemoryBillingsRepository()
 
 		sut = new CreateTicketUseCase(
 			inMemoryTicketsRepository,
 			inMemoryTechniciansRepository,
 			inMemoryCategoriesRepository,
 			inMemoryServicesRepository,
+			inMemoryBillingsRepository,
 		)
 	})
 
@@ -115,6 +119,13 @@ describe('Create ticket', () => {
 		expect(inMemoryTicketsRepository.items[0].technicianId).not.toBe(null)
 		expect(inMemoryTicketsRepository.items[0].assignmentStatus).toBe(
 			TicketAssignmentStatus.Assigned,
+		)
+		expect(inMemoryBillingsRepository.items).toHaveLength(1)
+		expect(inMemoryBillingsRepository.items[0].ticketId).toBe(ticket.id)
+		expect(inMemoryBillingsRepository.items[0].totalPrice).toEqual(
+			expect.objectContaining({
+				value: expect.any(Number),
+			}),
 		)
 	})
 
