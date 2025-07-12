@@ -10,6 +10,12 @@ export class InMemoryTicketsRepository implements TicketsRepository {
 		this.items.push(ticket)
 	}
 
+	async update(ticket: Ticket): Promise<void> {
+		const itemIndex = this.items.findIndex((item) => item.id === ticket.id)
+
+		this.items.splice(itemIndex, 1, ticket)
+	}
+
 	async findById(id: string): Promise<Ticket | null> {
 		const ticket = this.items.find((item) => item.id.toString() === id) ?? null
 

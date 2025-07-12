@@ -16,7 +16,10 @@ export interface ChangeTicketStatusUseCaseRequest {
 
 export type ChangeTicketStatusUseCaseResponse = Either<
 	NotAllowedError | ResourceNotFoundError,
-	{ ticket: Ticket }
+	{
+		ticket: Ticket
+		// interaction: Interaction
+	}
 >
 
 export class ChangeTicketStatusUseCase {
@@ -45,7 +48,7 @@ export class ChangeTicketStatusUseCase {
 		}
 
 		if (
-			actorRole !== Role.Technician &&
+			actorRole === Role.Technician &&
 			actorId !== ticket.technicianId.toString()
 		) {
 			return left(new NotAllowedError())
@@ -78,6 +81,8 @@ export class ChangeTicketStatusUseCase {
 		}
 
 		ticket.changeTicketStatus()
+
+		await this.ticketsRepository.update(ticket)
 
 		return right({ ticket })
 	}
