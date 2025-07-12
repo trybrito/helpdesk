@@ -12,4 +12,8 @@ export abstract class TicketsRepository {
 		id: string,
 		params?: PaginationParams,
 	): Promise<Ticket[]>
+	abstract findManyByCustomerId(
+		id: string,
+		params?: PaginationParams,
+	): Promise<Ticket[]>
 }

@@ -59,4 +59,23 @@ export class InMemoryTicketsRepository implements TicketsRepository {
 
 		return ticketsByTechnician
 	}
+
+	async findManyByCustomerId(
+		id: string,
+		params?: PaginationParams,
+	): Promise<Ticket[]> {
+		if (params?.page) {
+			const paginatedTicketsByCustomer = this.items
+				.filter((item) => item.customerId.toString() === id)
+				.slice((params.page - 1) * 20, params.page * 20)
+
+			return paginatedTicketsByCustomer
+		}
+
+		const ticketsByCustomer = this.items.filter(
+			(item) => item.customerId.toString() === id,
+		)
+
+		return ticketsByCustomer
+	}
 }

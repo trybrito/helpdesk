@@ -192,8 +192,6 @@ describe('Change ticket status', () => {
 			ticketId: ticket.id.toString(),
 		})
 
-		console.log(result.value)
-
 		expect(result.isLeft()).toBeTruthy()
 		expect(inMemoryInteractionsRepository.items).toHaveLength(0)
 		expect(result.value).toBeInstanceOf(ResourceNotFoundError)

@@ -1,36 +1,32 @@
 import { unwrapOrThrow } from '@api/core/helpers/unwrap-or-throw'
-import { Technician } from '@api/domain/enterprise/entities/technician'
-import { makeTechnician } from 'apps/api/test/factories/make-technician'
+import { makeCustomer } from 'apps/api/test/factories/make-customer'
 import { makeTicket } from 'apps/api/test/factories/make-ticket'
 import { InMemoryTicketsRepository } from 'apps/api/test/repositories/in-memory-tickets-repository'
-import { expect } from 'vitest'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
-import { FetchTicketsByTechnicianUseCase } from './fetch-tickets-by-technician'
-
-let technician: Technician
+import { FetchTicketsByCustomerUseCase } from './fetch-tickets-by-customer'
 
 let inMemoryTicketsRepository: InMemoryTicketsRepository
-let sut: FetchTicketsByTechnicianUseCase
+let sut: FetchTicketsByCustomerUseCase
 
-describe('Fetch tickets by technician', () => {
+describe('Fetch tickets history by customer', () => {
 	beforeEach(async () => {
-		technician = await makeTechnician()
-
 		inMemoryTicketsRepository = new InMemoryTicketsRepository()
-		sut = new FetchTicketsByTechnicianUseCase(inMemoryTicketsRepository)
+		sut = new FetchTicketsByCustomerUseCase(inMemoryTicketsRepository)
 	})
 
-	it('should allow a technician to fetch all tickets assigned to him', async () => {
+	it('should allow a customer to fetch all tickets created to him', async () => {
+		const customer = await makeCustomer()
+
 		for (let i = 0; i < 20; i++) {
 			const ticket = await makeTicket({
-				ticket: { technicianId: technician.id },
+				ticket: { customerId: customer.id },
 			})
 			inMemoryTicketsRepository.create(ticket)
 		}
 
 		const sutEitherResult = await sut.execute({
-			actorId: technician.id.toString(),
-			targetId: technician.id.toString(),
+			actorId: customer.id.toString(),
+			targetId: customer.id.toString(),
 		})
 
 		expect(sutEitherResult.isRight).toBeTruthy()
@@ -41,17 +37,19 @@ describe('Fetch tickets by technician', () => {
 		expect(inMemoryTicketsRepository.items).toHaveLength(20)
 	})
 
-	it('should allow a technician to fetch tickets assigned to him with pagination', async () => {
+	it('should allow a customer to fetch all tickets created to him with pagination', async () => {
+		const customer = await makeCustomer()
+
 		for (let i = 0; i < 22; i++) {
 			const ticket = await makeTicket({
-				ticket: { technicianId: technician.id },
+				ticket: { customerId: customer.id },
 			})
 			inMemoryTicketsRepository.create(ticket)
 		}
 
 		const sutEitherResult = await sut.execute({
-			actorId: technician.id.toString(),
-			targetId: technician.id.toString(),
+			actorId: customer.id.toString(),
+			targetId: customer.id.toString(),
 			page: 1,
 		})
 
@@ -63,20 +61,22 @@ describe('Fetch tickets by technician', () => {
 		expect(inMemoryTicketsRepository.items).toHaveLength(22)
 	})
 
-	it('should allow a technician to fetch all tickets assigned to another technician', async () => {
+	it('should not allow a customer to fetch tickets created to another customer', async () => {
+		const customer = await makeCustomer()
+
 		for (let i = 0; i < 20; i++) {
 			const ticket = await makeTicket({
-				ticket: { technicianId: technician.id },
+				ticket: { customerId: customer.id },
 			})
 			inMemoryTicketsRepository.create(ticket)
 		}
 
 		const result = await sut.execute({
-			actorId: 'another-technician',
-			targetId: technician.id.toString(),
+			actorId: 'another-customer',
+			targetId: customer.id.toString(),
 		})
 
-		expect(result.isLeft()).toBeTruthy()
+		expect(result.isLeft).toBeTruthy()
 		expect(result.value).toBeInstanceOf(NotAllowedError)
 	})
 })
