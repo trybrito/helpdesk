@@ -14,7 +14,7 @@ describe('Fetch tickets history by customer', () => {
 		sut = new FetchTicketsByCustomerUseCase(inMemoryTicketsRepository)
 	})
 
-	it('should allow a customer to fetch all tickets created to him', async () => {
+	it('should allow a customer to fetch all tickets created by him', async () => {
 		const customer = await makeCustomer()
 
 		for (let i = 0; i < 20; i++) {
@@ -37,7 +37,7 @@ describe('Fetch tickets history by customer', () => {
 		expect(inMemoryTicketsRepository.items).toHaveLength(20)
 	})
 
-	it('should allow a customer to fetch all tickets created to him with pagination', async () => {
+	it('should allow a customer to fetch all tickets created by him with pagination', async () => {
 		const customer = await makeCustomer()
 
 		for (let i = 0; i < 22; i++) {
@@ -61,7 +61,7 @@ describe('Fetch tickets history by customer', () => {
 		expect(inMemoryTicketsRepository.items).toHaveLength(22)
 	})
 
-	it('should not allow a customer to fetch tickets created to another customer', async () => {
+	it('should not allow a customer to fetch tickets created by another customer', async () => {
 		const customer = await makeCustomer()
 
 		for (let i = 0; i < 20; i++) {
