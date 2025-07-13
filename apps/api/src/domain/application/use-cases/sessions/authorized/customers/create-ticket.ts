@@ -9,6 +9,7 @@ import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
 import { BillingsRepository } from '@api/domain/application/repositories/billings-repository'
 import { CategoriesRepository } from '@api/domain/application/repositories/categories-repository'
+import { CustomersRepository } from '@api/domain/application/repositories/customers-repository'
 import { ServicesRepository } from '@api/domain/application/repositories/services-repository'
 import { TechniciansRepository } from '@api/domain/application/repositories/technicians-repository'
 import { TicketsRepository } from '@api/domain/application/repositories/tickets-repository'
@@ -24,7 +25,7 @@ import { getServiceByIdOrFail } from '../../../helpers/get-service-or-fail'
 
 export interface CreateTicketUseCaseRequest {
 	actorRole: Role
-	customerId: string
+	actorId: string
 	categoryId: string
 	servicesIds: string[]
 	description: string
@@ -38,6 +39,7 @@ export type CreateTicketUseCaseResponse = Either<
 export class CreateTicketUseCase {
 	constructor(
 		private ticketsRepository: TicketsRepository,
+		private customersRepository: CustomersRepository,
 		private techniciansRepository: TechniciansRepository,
 		private categoriesRepository: CategoriesRepository,
 		private servicesRepository: ServicesRepository,
@@ -46,12 +48,22 @@ export class CreateTicketUseCase {
 
 	async execute({
 		actorRole,
-		customerId,
+		actorId,
 		categoryId,
 		servicesIds,
 		description,
 	}: CreateTicketUseCaseRequest): Promise<CreateTicketUseCaseResponse> {
 		if (actorRole !== Role.Customer) {
+			return left(new NotAllowedError())
+		}
+
+		const costumer = await this.customersRepository.findById(actorId)
+
+		if (!costumer) {
+			return left(new ResourceNotFoundError())
+		}
+
+		if (costumer.deletedAt) {
 			return left(new NotAllowedError())
 		}
 
@@ -112,7 +124,7 @@ export class CreateTicketUseCase {
 		}
 
 		const ticket = Ticket.create({
-			customerId: new UniqueEntityId(customerId),
+			customerId: new UniqueEntityId(actorId),
 			category,
 			assignmentStatus,
 			description,
