@@ -31,7 +31,7 @@ export async function makeTicket(
 			customerId: customer.id,
 			category,
 			description: faker.lorem.paragraph(),
-			services: [service, service],
+			services: [service],
 			assignmentStatus: TicketAssignmentStatus.Pendent,
 			status: TicketStatus.Open,
 			...overrides?.ticket,

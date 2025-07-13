@@ -3,8 +3,8 @@ import { Either, left, right } from '@api/core/either'
 import { Service } from '@api/domain/enterprise/entities/service'
 import { ServicesRepository } from '../../../../repositories/services-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
+import { ResourceAlreadyDeletedError } from '../../../errors/resource-already-deleted-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
-import { ServiceAlreadyDeletedError } from '../../../errors/service-already-deleted-error'
 
 export interface SoftDeleteServiceUseCaseRequest {
 	actorRole: Role
@@ -12,7 +12,7 @@ export interface SoftDeleteServiceUseCaseRequest {
 }
 
 export type SoftDeleteServiceUseCaseResponse = Either<
-	ResourceNotFoundError | ServiceAlreadyDeletedError | NotAllowedError,
+	ResourceNotFoundError | ResourceAlreadyDeletedError | NotAllowedError,
 	{ service: Service }
 >
 
@@ -34,7 +34,7 @@ export class SoftDeleteServiceUseCase {
 		}
 
 		if (service.deletedAt) {
-			return left(new ServiceAlreadyDeletedError())
+			return left(new ResourceAlreadyDeletedError())
 		}
 
 		service.softDelete()

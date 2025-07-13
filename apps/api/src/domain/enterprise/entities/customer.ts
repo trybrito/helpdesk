@@ -2,6 +2,7 @@ import { Either, left, right } from '@api/core/either'
 import { Entity } from '@api/core/entities/entity'
 import { UniqueEntityId } from '@api/core/entities/unique-entity-id'
 import { InvalidInputDataError } from '@api/core/errors/invalid-input-data-error'
+import { ResourceAlreadyDeletedError } from '@api/domain/application/use-cases/errors/resource-already-deleted-error'
 import { User } from './user'
 import { Email } from './value-objects/email'
 import { PasswordTooShortError } from './value-objects/errors/password-too-short-error'
@@ -12,6 +13,7 @@ export type CustomerProps = {
 	lastUpdateLogId?: UniqueEntityId | null
 	firstName: string
 	lastName: string
+	deletedAt?: Date | null
 }
 
 type UpdateProfileRequest = {
@@ -46,12 +48,8 @@ export class Customer extends Entity<CustomerProps> {
 		return this.props.lastName
 	}
 
-	set firstName(name: string) {
-		this.props.firstName = name
-	}
-
-	set lastName(name: string) {
-		this.props.lastName = name
+	get deletedAt() {
+		return this.props.deletedAt
 	}
 
 	static create(props: CustomerProps, id?: UniqueEntityId) {
@@ -83,9 +81,17 @@ export class Customer extends Entity<CustomerProps> {
 		this.props.user.email = validatedEmail
 		this.props.user.password = validatedPassword
 		this.props.user.profileImageUrl = profileImageUrl ?? null
-		this.firstName = firstName
-		this.lastName = lastName
+		this.props.firstName = firstName
+		this.props.lastName = lastName
 
 		return right({ newCustomer: this })
+	}
+
+	softDelete() {
+		if (this.props.deletedAt) {
+			throw new ResourceAlreadyDeletedError()
+		}
+
+		this.props.deletedAt = new Date()
 	}
 }

@@ -6,8 +6,8 @@ import { makeService } from 'apps/api/test/factories/make-service'
 import { makeTechnician } from 'apps/api/test/factories/make-technician'
 import { InMemoryServicesRepository } from 'apps/api/test/repositories/in-memory-services-repository'
 import { NotAllowedError } from '../../../errors/not-allowed-error'
+import { ResourceAlreadyDeletedError } from '../../../errors/resource-already-deleted-error'
 import { ResourceNotFoundError } from '../../../errors/resource-not-found-error'
-import { ServiceAlreadyDeletedError } from '../../../errors/service-already-deleted-error'
 import { SoftDeleteServiceUseCase } from './soft-delete-service'
 
 let admin: Admin
@@ -100,7 +100,7 @@ describe('Soft delete service', () => {
 		})
 
 		expect(result.isLeft()).toBeTruthy()
-		expect(result.value).toBeInstanceOf(ServiceAlreadyDeletedError)
+		expect(result.value).toBeInstanceOf(ResourceAlreadyDeletedError)
 		expect(inMemoryServicesRepository.items).toHaveLength(1)
 	})
 })
